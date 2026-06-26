@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FIP Journal"/>
+<meta name="theme-color" content="#000000"/>
+<title>FIP Journal</title>
+<link rel="manifest" href="manifest.json"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+:root{
+  --bg:#000;--s1:#1C1C1E;--s2:#2C2C2E;--s3:#3A3A3C;
+  --ov:rgba(28,28,30,0.94);
+  --l1:#fff;--l2:rgba(235,235,245,0.6);--l3:rgba(235,235,245,0.3);--l4:rgba(235,235,245,0.12);
+  --green:#30D158;--gd:rgba(48,209,88,0.16);
+  --blue:#0A84FF;--bd:rgba(10,132,255,0.16);
+  --orange:#FF9F0A;--od:rgba(255,159,10,0.16);
+  --red:#FF453A;--rd:rgba(255,69,58,0.14);
+  --purple:#BF5AF2;--pd:rgba(191,90,242,0.16);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",sans-serif;
+  --rc:16px;--rs:10px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+.shell{max-width:430px;margin:0 auto;padding-bottom:calc(84px + var(--sb))}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;padding:calc(var(--st) + 12px) 20px 12px;background:var(--ov);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--l4)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-title{font-size:17px;font-weight:600;letter-spacing:-.4px}
+.cat-chip{display:inline-flex;align-items:center;gap:5px;background:var(--s2);padding:5px 10px 5px 8px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.cat-chip:active{opacity:.5}
+
+/* TAB BAR */
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--ov);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--l4);display:flex;padding-bottom:var(--sb);z-index:100}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 3px;font-size:10px;font-weight:500;color:var(--l3);cursor:pointer;border:none;background:none;-webkit-appearance:none;transition:color .15s}
+.tb svg{width:22px;height:22px}
+.tb.active{color:var(--blue)}
+
+/* PAGES */
+.page{display:none;padding:16px 14px 0}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--s1);border-radius:var(--rc);padding:18px;margin-bottom:10px}
+.card-sm{background:var(--s1);border-radius:var(--rc);overflow:hidden;margin-bottom:10px}
+
+/* HERO */
+.hero{display:flex;align-items:center;gap:20px;padding:22px 20px}
+.ring-wrap{position:relative;flex-shrink:0;width:110px;height:110px}
+.ring-svg{width:110px;height:110px;transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--s3);stroke-width:8}
+.ring-fill{fill:none;stroke:var(--green);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-size:30px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+.ring-lbl{font-size:9px;color:var(--l2);font-weight:500;letter-spacing:.3px;margin-top:1px}
+.hero-stats{flex:1;display:flex;flex-direction:column;gap:12px}
+.st-row{display:flex;flex-direction:column;gap:2px}
+.st-val{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1}
+.st-key{font-size:11px;color:var(--l2)}
+.st-div{height:.5px;background:var(--l4)}
+
+/* WEEK DOTS */
+.week-card{padding:14px 18px 14px}
+.week-lbl{font-size:11px;font-weight:600;color:var(--l3);letter-spacing:.2px;margin-bottom:8px}
+.week-dots{display:flex;gap:4px;margin-bottom:6px}
+.wd{flex:1;height:5px;border-radius:3px;background:var(--s3)}
+.wd.done{background:var(--green)}
+.wd.today-dot{background:var(--blue)}
+.week-sub{font-size:11px;color:var(--l3)}
+
+/* FORM */
+.f-lbl{font-size:11px;font-weight:600;color:var(--l3);letter-spacing:.2px;margin-bottom:5px;margin-top:12px}
+.f-lbl:first-of-type{margin-top:0}
+.f-row{display:flex;gap:8px}
+.inp{flex:1;background:var(--s2);border:none;border-radius:var(--rs);padding:11px 12px;color:var(--l1);font-family:var(--font);font-size:15px;outline:none;transition:background .15s;-webkit-appearance:none;min-width:0}
+.inp:focus{background:var(--s3)}
+.inp::placeholder{color:var(--l3)}
+.inp-xs{flex:0 0 80px}
+.inp-sm{flex:0 0 100px}
+select.inp{cursor:pointer}
+select.inp option{background:#1C1C1E}
+.ta{width:100%;background:var(--s2);border:none;border-radius:var(--rs);padding:11px 12px;color:var(--l1);font-family:var(--font);font-size:15px;line-height:1.45;outline:none;resize:none;min-height:64px;-webkit-appearance:none;transition:background .15s}
+.ta:focus{background:var(--s3)}
+.ta::placeholder{color:var(--l3)}
+
+/* BUTTONS */
+.btn{width:100%;padding:14px;border-radius:var(--rs);border:none;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;-webkit-appearance:none;transition:opacity .15s,transform .1s;margin-top:12px}
+.btn:active{opacity:.7;transform:scale(.98)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-green{background:var(--gd);color:var(--green)}
+.btn-red{background:var(--rd);color:var(--red)}
+.btn-ghost{background:var(--s2);color:var(--l2)}
+.btn-row{display:flex;gap:8px;margin-top:12px}
+.btn-row .btn{margin-top:0}
+
+/* STATUS BADGE */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge-pending{background:var(--od);color:var(--orange)}
+.badge-done{background:var(--gd);color:var(--green)}
+
+/* TODAY TOP */
+.today-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.today-date{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.today-sub{font-size:12px;color:var(--l2);margin-top:2px}
+
+/* GROUPED ROWS */
+.gr{display:flex;align-items:center;padding:13px 16px;gap:12px;border-bottom:.5px solid var(--l4)}
+.gr:last-child{border-bottom:none}
+.gr-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.gr-body{flex:1;min-width:0}
+.gr-title{font-size:15px;font-weight:500;letter-spacing:-.2px}
+.gr-sub{font-size:12px;color:var(--l2);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gr-right{font-size:13px;color:var(--l2);flex-shrink:0;font-weight:500}
+.gr-arr{color:var(--l3);font-size:18px;flex-shrink:0}
+
+/* PROTOCOL PILLS */
+.proto-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.proto-pill{padding:6px 13px;border-radius:20px;font-size:13px;font-weight:500;background:var(--s2);color:var(--l2);cursor:pointer;border:1.5px solid transparent;transition:all .15s;-webkit-appearance:none;border:none}
+.proto-pill.sel{background:var(--bd);color:var(--blue)}
+.conc-pills{display:flex;gap:6px;margin-top:6px}
+.conc-pill{flex:1;padding:8px 4px;border-radius:var(--rs);font-size:13px;font-weight:500;background:var(--s2);color:var(--l2);cursor:pointer;text-align:center;border:none;-webkit-appearance:none;transition:all .15s}
+.conc-pill.sel{background:var(--bd);color:var(--blue)}
+
+/* CALENDAR */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-title{font-size:17px;font-weight:700;letter-spacing:-.4px}
+.cal-nav-btn{width:30px;height:30px;border-radius:50%;background:var(--s2);border:none;color:var(--l1);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;transition:background .15s}
+.cal-nav-btn:active{background:var(--s3)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.dow{text-align:center;font-size:10px;font-weight:600;color:var(--l3);padding:4px 0;letter-spacing:.2px}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cd{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:400;cursor:pointer;position:relative;-webkit-appearance:none;background:none;border:none;color:var(--l1);transition:background .1s}
+.cd.empty,.cd.out-range{color:var(--l3);cursor:default}
+.cd.past-undone{color:var(--l3)}
+.cd.today-c{font-weight:700;color:var(--blue)}
+.cd.today-c::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--blue)}
+.cd.done-c{background:var(--green);color:#000;font-weight:600}
+.cd.missed-c{color:var(--red)}
+.cd.missed-c::before{content:'';position:absolute;inset:2px;border-radius:50%;border:1.5px solid var(--rd)}
+.cd:active:not(.empty){opacity:.6}
+
+.cal-legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--l2)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* DAY DETAIL */
+.day-detail{background:var(--s2);border-radius:var(--rc);padding:14px 16px;margin-top:8px;display:none}
+.day-detail.open{display:block}
+.dd-date{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--l2)}
+.dd-row{display:flex;align-items:center;gap:8px;font-size:14px;padding:3px 0}
+.dd-edit{margin-top:10px}
+
+/* LOG */
+.log-item{background:var(--s1);border-radius:var(--rc);padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:opacity .15s}
+.log-item:active{opacity:.6}
+.log-badge{min-width:38px;height:38px;border-radius:10px;background:var(--gd);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.log-body{flex:1;min-width:0}
+.log-date{font-size:12px;color:var(--l2);margin-bottom:2px}
+.log-main{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.log-meta{font-size:12px;color:var(--l2);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+.log-note{font-size:13px;color:var(--l2);margin-top:4px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 24px;color:var(--l3)}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.empty-t{font-size:15px;font-weight:500}
+.empty-s{font-size:13px;margin-top:5px;line-height:1.5}
+
+/* TOAST */
+.toast{position:fixed;top:calc(var(--st) + 64px);left:50%;transform:translateX(-50%) translateY(-16px);background:rgba(50,50,52,0.96);backdrop-filter:blur(20px);color:var(--l1);padding:9px 18px;border-radius:28px;font-size:13px;font-weight:500;white-space:nowrap;z-index:999;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SHEET */
+.sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;display:flex;align-items:flex-end;justify-content:center}
+.sheet-ov.open{opacity:1;pointer-events:all}
+.sheet{background:var(--s1);border-radius:20px 20px 0 0;width:100%;max-width:430px;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,0,.67,0);padding-bottom:calc(var(--sb) + 8px);max-height:92dvh;overflow-y:auto}
+.sheet-ov.open .sheet{transform:translateY(0);transition-timing-function:cubic-bezier(.33,1,.68,1)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--s3);margin:10px auto 18px}
+.sheet-title{font-size:17px;font-weight:600;letter-spacing:-.4px;padding:0 18px;margin-bottom:3px}
+.sheet-sub{font-size:13px;color:var(--l2);padding:0 18px;margin-bottom:14px;line-height:1.4}
+.sheet-body{padding:0 18px}
+.sheet-footer{padding:10px 18px 0}
+.sh-sect{font-size:11px;font-weight:600;color:var(--l3);letter-spacing:.2px;margin:14px 0 6px}
+.sh-sect:first-child{margin-top:0}
+
+/* DIVIDER */
+.divider{height:.5px;background:var(--l4);margin:8px 0}
+
+/* EXPORT ROW */
+.exp-row{display:flex;gap:8px}
+.exp-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:var(--rs);background:var(--s2);border:none;color:var(--l2);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;-webkit-appearance:none;transition:background .15s}
+.exp-btn:active{background:var(--s3)}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <div class="nav-title">FIP Journal</div>
+    <div class="cat-chip" id="catChip">🐱 <span id="catChipName">Set name</span></div>
+  </div>
+</div>
+
+<!-- TODAY PAGE -->
+<div class="page active" id="page-today">
+
+  <div class="card-sm">
+    <div class="hero">
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 110 110">
+          <circle class="ring-track" cx="55" cy="55" r="46"/>
+          <circle class="ring-fill" id="ringFill" cx="55" cy="55" r="46" stroke-dasharray="289.03" stroke-dashoffset="289.03"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-num" id="heroDay">1</div>
+          <div class="ring-lbl">OF 84</div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="st-row"><div class="st-val" style="color:var(--green)" id="statDone">0</div><div class="st-key">Injections done</div></div>
+        <div class="st-div"></div>
+        <div class="st-row"><div class="st-val" style="color:var(--orange)" id="statLeft">84</div><div class="st-key">Days remaining</div></div>
+      </div>
+    </div>
+    <div class="week-card" id="weekCard"></div>
+  </div>
+
+  <div class="card" id="todayCard">
+    <div class="today-top">
+      <div>
+        <div class="today-date" id="todayDateLbl">—</div>
+        <div class="today-sub" id="todayDayLbl">—</div>
+      </div>
+      <div class="badge badge-pending" id="statusBadge"><div class="dot"></div><span id="statusTxt">Pending</span></div>
+    </div>
+
+    <div class="f-lbl">TEMPERATURE (°C)</div>
+    <div class="f-row">
+      <input class="inp inp-sm" id="iTemp" type="number" step="0.1" placeholder="38.5°C"/>
+      <input class="inp" id="iWeight" type="number" step="0.1" placeholder="Cat weight (kg)"/>
+    </div>
+
+    <div class="f-lbl">VIAL CONCENTRATION</div>
+    <div class="conc-pills" id="concPills">
+      <button class="conc-pill" data-v="20">20 mg/ml</button>
+      <button class="conc-pill" data-v="30">30 mg/ml</button>
+      <button class="conc-pill" data-v="40">40 mg/ml</button>
+    </div>
+
+    <div class="f-lbl">DOSAGE PROTOCOL</div>
+    <div id="protocolDisplay" style="font-size:13px;color:var(--l2);margin-bottom:6px">—</div>
+    <div class="f-row">
+      <input class="inp" id="iDoseKg" type="number" step="0.1" placeholder="mg/kg (auto from protocol)"/>
+      <input class="inp inp-sm" id="iDoseActual" type="number" step="0.01" placeholder="ml actual"/>
+    </div>
+
+    <div class="f-lbl">NOTES</div>
+    <textarea class="ta" id="iNote" placeholder="Observations, reaction, side effects…"></textarea>
+
+    <div class="btn-row">
+      <button class="btn btn-blue" id="markBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="markBtnLbl">Mark done</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Info rows -->
+  <div class="card-sm">
+    <div class="gr">
+      <div class="gr-icon" style="background:var(--gd)">💉</div>
+      <div class="gr-body"><div class="gr-title">Treatment start</div><div class="gr-sub">23 Jun 2026, 8:20 PM IST — Day 1</div></div>
+    </div>
+    <div class="gr">
+      <div class="gr-icon" style="background:var(--bd)">🎯</div>
+      <div class="gr-body"><div class="gr-title">Completion</div><div class="gr-sub" id="endDateLbl">—</div></div>
+    </div>
+    <div class="gr">
+      <div class="gr-icon" style="background:var(--od)">🔥</div>
+      <div class="gr-body"><div class="gr-title">Streak</div></div>
+      <div class="gr-right" id="streakVal">0 days</div>
+    </div>
+    <div class="gr" style="cursor:pointer" id="protoSettingsRow">
+      <div class="gr-icon" style="background:var(--pd)">⚙️</div>
+      <div class="gr-body"><div class="gr-title">Protocol settings</div><div class="gr-sub" id="protoSettingsLbl">Tap to configure</div></div>
+      <div class="gr-arr">›</div>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div class="card-sm" style="padding:14px 16px">
+    <div style="font-size:11px;font-weight:600;color:var(--l3);letter-spacing:.2px;margin-bottom:8px">EXPORT DATA</div>
+    <div class="exp-row">
+      <button class="exp-btn" id="exportCSV">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+      <button class="exp-btn" id="exportExcel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Export Excel
+      </button>
+    </div>
+  </div>
+
+</div><!-- /today -->
+
+<!-- CALENDAR PAGE -->
+<div class="page" id="page-calendar">
+  <div class="cal-hdr">
+    <div class="cal-title" id="calMonthTitle">—</div>
+    <div style="display:flex;gap:6px">
+      <button class="cal-nav-btn" id="calPrev">‹</button>
+      <button class="cal-nav-btn" id="calNext">›</button>
+    </div>
+  </div>
+  <div class="card-sm" style="padding:14px">
+    <div class="cal-dow">
+      <div class="dow">SUN</div><div class="dow">MON</div><div class="dow">TUE</div>
+      <div class="dow">WED</div><div class="dow">THU</div><div class="dow">FRI</div><div class="dow">SAT</div>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+    <div class="cal-legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--green)"></div>Done</div>
+      <div class="leg"><div class="leg-dot" style="border:1.5px solid var(--red);border-radius:50%"></div>Missed</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>Today</div>
+    </div>
+  </div>
+  <div class="day-detail" id="dayDetail">
+    <div class="dd-date" id="detailDate">—</div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<!-- LOG PAGE -->
+<div class="page" id="page-log">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div style="font-size:20px;font-weight:700;letter-spacing:-.5px">History</div>
+  </div>
+  <div id="logList"></div>
+</div>
+
+</div><!-- /shell -->
+
+<!-- TAB BAR -->
+<div class="tabbar">
+  <button class="tb active" data-page="today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    Today
+  </button>
+  <button class="tb" data-page="calendar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendar
+  </button>
+  <button class="tb" data-page="log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+    Log
+  </button>
+</div>
+
+<!-- SHEET: Cat Name -->
+<div class="sheet-ov" id="nameSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Your cat's name</div>
+    <div class="sheet-sub">Personalise the journal</div>
+    <div class="sheet-body">
+      <input class="inp" id="nameInput" placeholder="Luna, Mochi, Oliver…" maxlength="24" autocomplete="off" style="width:100%"/>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-blue" id="saveNameBtn" style="margin-top:10px">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Protocol Settings -->
+<div class="sheet-ov" id="protoSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Protocol Settings</div>
+    <div class="sheet-sub">Set once — applies as default daily. Override any day manually.</div>
+    <div class="sheet-body">
+      <div class="sh-sect">FIP TYPE</div>
+      <div class="proto-pills" id="typePills">
+        <button class="proto-pill" data-v="dry">Dry (6 mg/kg)</button>
+        <button class="proto-pill" data-v="wet">Wet (8 mg/kg)</button>
+        <button class="proto-pill" data-v="neuro">Neurological (10 mg/kg)</button>
+      </div>
+      <div class="sh-sect">DEFAULT VIAL CONCENTRATION</div>
+      <div class="conc-pills" id="protoConc">
+        <button class="conc-pill" data-v="20">20 mg/ml</button>
+        <button class="conc-pill" data-v="30">30 mg/ml</button>
+        <button class="conc-pill" data-v="40">40 mg/ml</button>
+      </div>
+      <div class="sh-sect">CAT BASE WEIGHT (kg)</div>
+      <input class="inp" id="protoWeight" type="number" step="0.1" placeholder="e.g. 4.2" style="width:100%"/>
+      <div style="font-size:11px;color:var(--l3);margin-top:6px;line-height:1.5">Auto-calculates ml dose from: weight × mg/kg ÷ concentration. Override per-day on Today tab.</div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-blue" id="saveProtoBtn">Save Protocol</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Edit Day -->
+<div class="sheet-ov" id="editSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="editSheetTitle">Log Entry</div>
+    <div class="sheet-sub" id="editSheetSub">—</div>
+    <div class="sheet-body">
+      <div class="sh-sect">TEMPERATURE (°C) & WEIGHT (kg)</div>
+      <div class="f-row">
+        <input class="inp" id="eTemp" type="number" step="0.1" placeholder="38.5°C"/>
+        <input class="inp" id="eWeight" type="number" step="0.1" placeholder="kg"/>
+      </div>
+      <div class="sh-sect">VIAL CONCENTRATION</div>
+      <div class="conc-pills" id="editConc">
+        <button class="conc-pill" data-v="20">20 mg/ml</button>
+        <button class="conc-pill" data-v="30">30 mg/ml</button>
+        <button class="conc-pill" data-v="40">40 mg/ml</button>
+      </div>
+      <div class="sh-sect">DOSAGE</div>
+      <div class="f-row">
+        <input class="inp" id="eDoseKg" type="number" step="0.1" placeholder="mg/kg"/>
+        <input class="inp inp-sm" id="eDoseActual" type="number" step="0.01" placeholder="ml actual"/>
+      </div>
+      <div class="sh-sect">NOTES</div>
+      <textarea class="ta" id="eNote" placeholder="Observations…"></textarea>
+    </div>
+    <div class="sheet-footer">
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="editCancelBtn">Cancel</button>
+        <button class="btn btn-blue" id="editSaveBtn">Save Entry</button>
+      </div>
+      <button class="btn btn-red" id="editDeleteBtn" style="margin-top:6px">Remove Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── CONSTANTS ── */
+const START = new Date(2026,5,23); // June 23 2026 local midnight (Day 1)
+const TOTAL = 84;
+const K = { name:'fip_name', logs:'fip_logs3', proto:'fip_proto' };
+
+/* ── STATE ── */
+let S = { name:'', logs:{}, proto:{ type:'', conc:30, weight:'', doseKg:'' } };
+let calView = new Date(2026,5,1);
+let activePage = 'today';
+let editKey = null; // date key being edited in sheet
+
+/* ── UTILS ── */
+const pad = n => String(n).padStart(2,'0');
+const dkey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayKey = () => dkey(new Date());
+
+function dayNDate(n){ // 1-based → Date
+  const d = new Date(START);
+  d.setDate(d.getDate()+(n-1));
+  return d;
+}
+function treatDay(date){ // Date → treatment day (1-based), 0 if before, >84 if after
+  const s = new Date(START); s.setHours(0,0,0,0);
+  const t = new Date(date); t.setHours(0,0,0,0);
+  return Math.round((t-s)/86400000)+1;
+}
+function curDay(){ return Math.max(1,Math.min(TOTAL,treatDay(new Date()))); }
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function fmtFull(date){
+  return `${DAYS_SHORT[date.getDay()]}, ${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
+function fmtShort(date){
+  return `${date.getDate()} ${MONTHS[date.getMonth()].slice(0,3)} ${date.getFullYear()}`;
+}
+
+/* ── PERSISTENCE ── */
+function load(){
+  S.name = localStorage.getItem(K.name)||'';
+  try{ S.logs = JSON.parse(localStorage.getItem(K.logs))||{}; }catch{ S.logs={}; }
+  try{ S.proto = {...S.proto,...JSON.parse(localStorage.getItem(K.proto))}; }catch{}
+}
+function save(){
+  localStorage.setItem(K.name,S.name);
+  localStorage.setItem(K.logs,JSON.stringify(S.logs));
+  localStorage.setItem(K.proto,JSON.stringify(S.proto));
+}
+
+/* ── COMPUTED ── */
+function calcDose(weightKg, doseKg, conc){
+  if(!weightKg||!doseKg||!conc) return null;
+  return (parseFloat(weightKg)*parseFloat(doseKg)/parseFloat(conc)).toFixed(2);
+}
+function protoDoseKg(){
+  return S.proto.type==='dry'?6:S.proto.type==='wet'?8:S.proto.type==='neuro'?10:S.proto.doseKg||'';
+}
+function getStats(){
+  const day = curDay();
+  let done=0,missed=0,streak=0;
+  for(let i=1;i<=day;i++){
+    const k=dkey(dayNDate(i));
+    if(S.logs[k]?.done) done++;
+    else if(i<day) missed++;
+  }
+  for(let i=day;i>=1;i--){
+    if(S.logs[dkey(dayNDate(i))]?.done) streak++; else break;
+  }
+  return {done,missed,streak,left:TOTAL-done};
+}
+
+/* ── RENDER: TODAY ── */
+function renderToday(){
+  const day=curDay(), stats=getStats(), tk=todayKey(), log=S.logs[tk]||{};
+  const now=new Date();
+
+  // Ring
+  const circ=2*Math.PI*46; // 289.03
+  document.getElementById('ringFill').style.strokeDashoffset = circ*(1-stats.done/TOTAL);
+  document.getElementById('heroDay').textContent=day;
+  document.getElementById('statDone').textContent=stats.done;
+  document.getElementById('statLeft').textContent=stats.left;
+
+  // Cat chip
+  document.getElementById('catChipName').textContent=S.name||'Set name';
+
+  // Dates
+  document.getElementById('todayDateLbl').textContent=fmtFull(now);
+  document.getElementById('todayDayLbl').textContent=`Day ${day} of ${TOTAL}`;
+  document.getElementById('endDateLbl').textContent=fmtShort(dayNDate(84));
+  document.getElementById('streakVal').textContent=`${stats.streak} day${stats.streak!==1?'s':''}`;
+
+  // Protocol display
+  const dkg=protoDoseKg();
+  const protoNames={dry:'Dry FIP',wet:'Wet FIP',neuro:'Neurological FIP'};
+  document.getElementById('protocolDisplay').textContent =
+    S.proto.type ? `${protoNames[S.proto.type]} · ${dkg} mg/kg · ${S.proto.conc} mg/ml vial` : 'No protocol set — tap ⚙️ to configure';
+  document.getElementById('protoSettingsLbl').textContent =
+    S.proto.type ? `${protoNames[S.proto.type]} · ${dkg} mg/kg` : 'Tap to configure';
+
+  // Status badge
+  const badge=document.getElementById('statusBadge');
+  const stxt=document.getElementById('statusTxt');
+  if(log.done){
+    badge.className='badge badge-done';
+    const t=new Date(log.ts);
+    stxt.textContent=`Done · ${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+  } else {
+    badge.className='badge badge-pending';
+    stxt.textContent='Pending';
+  }
+
+  // Fill today inputs
+  document.getElementById('iTemp').value=log.temp||'';
+  document.getElementById('iWeight').value=log.weight||'';
+  document.getElementById('iDoseKg').value=log.doseKg||(log.done?'':dkg)||'';
+  document.getElementById('iDoseActual').value=log.doseActual||'';
+  document.getElementById('iNote').value=log.note||'';
+
+  // Concentration pills
+  const conc=log.conc||S.proto.conc;
+  document.querySelectorAll('#concPills .conc-pill').forEach(p=>{
+    p.classList.toggle('sel',String(p.dataset.v)===String(conc));
+  });
+
+  // Mark button
+  const btn=document.getElementById('markBtn');
+  const lbl=document.getElementById('markBtnLbl');
+  if(log.done){
+    btn.className='btn btn-green';
+    lbl.textContent='Logged ✓ — tap to undo';
+    btn.onclick=undoToday;
+  } else {
+    btn.className='btn btn-blue';
+    lbl.textContent='Mark injection done';
+    btn.onclick=markToday;
+  }
+
+  renderWeek(day);
+}
+
+function renderWeek(day){
+  const s=Math.max(1,day-6), e=Math.min(TOTAL,day);
+  let dots='';
+  for(let i=s;i<=e;i++){
+    const k=dkey(dayNDate(i));
+    let cls='wd';
+    if(i===day) cls+=' today-dot';
+    else if(S.logs[k]?.done) cls+=' done';
+    dots+=`<div class="${cls}" title="Day ${i}"></div>`;
+  }
+  document.getElementById('weekCard').innerHTML=
+    `<div class="week-lbl">THIS WEEK</div><div class="week-dots">${dots}</div><div class="week-sub">Days ${s}–${e} of ${TOTAL}</div>`;
+}
+
+/* ── RENDER: CALENDAR ── */
+function renderCalendar(){
+  const y=calView.getFullYear(), m=calView.getMonth();
+  document.getElementById('calMonthTitle').textContent=`${MONTHS[m]} ${y}`;
+  const first=new Date(y,m,1).getDay();
+  const last=new Date(y,m+1,0).getDate();
+  const todStr=todayKey();
+  const now=new Date(); now.setHours(0,0,0,0);
+
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="cd empty"></div>`;
+  for(let d=1;d<=last;d++){
+    const date=new Date(y,m,d);
+    const k=dkey(date);
+    const td=treatDay(date);
+    const isToday=k===todStr;
+    const isPast=date<now;
+    const inRange=td>=1&&td<=TOTAL;
+    const log=S.logs[k];
+    let cls='cd';
+    if(isToday) cls+=' today-c';
+    if(inRange&&log?.done) cls+=' done-c';
+    else if(inRange&&isPast&&!isToday&&!log?.done) cls+=' missed-c';
+    else if(!inRange) cls+=' out-range';
+    html+=`<div class="${cls}" data-k="${k}" data-td="${td}">${d}</div>`;
+  }
+  document.getElementById('calDays').innerHTML=html;
+  document.getElementById('calDays').querySelectorAll('.cd:not(.empty)').forEach(el=>{
+    el.addEventListener('click',()=>showDayDetail(el));
+  });
+  document.getElementById('dayDetail').classList.remove('open');
+}
+
+function showDayDetail(el){
+  const k=el.dataset.k, td=parseInt(el.dataset.td);
+  const log=S.logs[k];
+  const [y,mo,d]=k.split('-').map(Number);
+  const date=new Date(y,mo-1,d);
+  document.getElementById('detailDate').textContent=fmtFull(date);
+
+  let body='';
+  if(td<1||td>TOTAL){
+    body=`<div class="dd-row" style="color:var(--l3)">Outside treatment period</div>`;
+  } else if(log?.done){
+    const t=new Date(log.ts);
+    body+=`<div class="dd-row">✅ Day ${td} — Logged ${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}</div>`;
+    if(log.doseKg) body+=`<div class="dd-row">💉 ${log.doseKg} mg/kg${log.doseActual?' · '+log.doseActual+' ml':''}</div>`;
+    if(log.conc) body+=`<div class="dd-row">🧪 ${log.conc} mg/ml</div>`;
+    if(log.temp) body+=`<div class="dd-row">🌡️ ${log.temp}°C</div>`;
+    if(log.weight) body+=`<div class="dd-row">⚖️ ${log.weight} kg</div>`;
+    if(log.note) body+=`<div class="dd-row" style="color:var(--l2)">📝 ${log.note}</div>`;
+    body+=`<div class="dd-edit"><button class="btn btn-ghost" style="margin-top:0" onclick="openEdit('${k}')">Edit entry</button></div>`;
+  } else {
+    const isPast=date<new Date();
+    body+=`<div class="dd-row" style="color:${isPast?'var(--red)':'var(--l3)'}">
+      ${isPast?`❌ Day ${td} — Missed`:`📅 Day ${td} — Upcoming`}</div>`;
+    if(isPast||td===curDay()) {
+      body+=`<div class="dd-edit"><button class="btn btn-blue" style="margin-top:8px" onclick="openEdit('${k}')">Add entry</button></div>`;
+    }
+  }
+  document.getElementById('detailBody').innerHTML=body;
+  document.getElementById('dayDetail').classList.add('open');
+}
+
+/* ── RENDER: LOG ── */
+function renderLog(){
+  const entries=Object.entries(S.logs).filter(([,v])=>v.done).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!entries.length){
+    document.getElementById('logList').innerHTML=`<div class="empty"><div class="empty-icon">💉</div><div class="empty-t">No injections logged yet</div><div class="empty-s">Mark today's injection on the Today tab.</div></div>`;
+    return;
+  }
+  document.getElementById('logList').innerHTML=entries.map(([k,log])=>{
+    const [y,mo,d]=k.split('-').map(Number);
+    const date=new Date(y,mo-1,d);
+    const td=treatDay(date);
+    const t=new Date(log.ts);
+    const timeStr=`${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+    const meta=[];
+    if(log.conc) meta.push(`${log.conc} mg/ml`);
+    if(log.temp) meta.push(`${log.temp}°C`);
+    if(log.weight) meta.push(`${log.weight} kg`);
+    return `<div class="log-item" onclick="openEdit('${k}')">
+      <div class="log-badge">${td}</div>
+      <div class="log-body">
+        <div class="log-date">${fmtShort(date)} · ${timeStr}</div>
+        <div class="log-main">${log.doseKg?log.doseKg+' mg/kg':'No dosage'}${log.doseActual?' · '+log.doseActual+' ml':''}</div>
+        ${meta.length?`<div class="log-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>`:''}
+        ${log.note?`<div class="log-note">${log.note}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── ACTIONS: TODAY ── */
+function getFormLog(){
+  const concSel=document.querySelector('#concPills .conc-pill.sel');
+  return {
+    temp:document.getElementById('iTemp').value.trim(),
+    weight:document.getElementById('iWeight').value.trim(),
+    conc:concSel?concSel.dataset.v:S.proto.conc,
+    doseKg:document.getElementById('iDoseKg').value.trim(),
+    doseActual:document.getElementById('iDoseActual').value.trim(),
+    note:document.getElementById('iNote').value.trim(),
+  };
+}
+function markToday(){
+  const tk=todayKey();
+  S.logs[tk]={...getFormLog(),done:true,ts:Date.now()};
+  save(); renderAll(); toast('Injection logged ✓');
+}
+function undoToday(){
+  const tk=todayKey();
+  if(S.logs[tk]) S.logs[tk].done=false;
+  save(); renderAll(); toast('Entry unmarked');
+}
+
+let _dsave;
+function debounceFormSave(){
+  clearTimeout(_dsave);
+  _dsave=setTimeout(()=>{
+    const tk=todayKey();
+    if(!S.logs[tk]) S.logs[tk]={done:false};
+    Object.assign(S.logs[tk],getFormLog());
+    save();
+  },700);
+}
+
+/* ── EDIT SHEET ── */
+function openEdit(k){
+  editKey=k;
+  const [y,mo,d]=k.split('-').map(Number);
+  const date=new Date(y,mo-1,d);
+  const td=treatDay(date);
+  const log=S.logs[k]||{};
+
+  document.getElementById('editSheetTitle').textContent=`Day ${td} Entry`;
+  document.getElementById('editSheetSub').textContent=fmtFull(date);
+  document.getElementById('eTemp').value=log.temp||'';
+  document.getElementById('eWeight').value=log.weight||'';
+  document.getElementById('eDoseKg').value=log.doseKg||protoDoseKg()||'';
+  document.getElementById('eDoseActual').value=log.doseActual||'';
+  document.getElementById('eNote').value=log.note||'';
+
+  // Conc pills
+  const conc=log.conc||S.proto.conc;
+  document.querySelectorAll('#editConc .conc-pill').forEach(p=>{
+    p.classList.toggle('sel',String(p.dataset.v)===String(conc));
+  });
+
+  document.getElementById('editDeleteBtn').style.display=log.done?'flex':'none';
+  openSheet('editSheet');
+  // Close day detail
+  document.getElementById('dayDetail').classList.remove('open');
+}
+
+document.getElementById('editSaveBtn').addEventListener('click',()=>{
+  if(!editKey) return;
+  const concSel=document.querySelector('#editConc .conc-pill.sel');
+  if(!S.logs[editKey]) S.logs[editKey]={};
+  Object.assign(S.logs[editKey],{
+    done:true,
+    ts:S.logs[editKey].ts||Date.now(),
+    temp:document.getElementById('eTemp').value.trim(),
+    weight:document.getElementById('eWeight').value.trim(),
+    conc:concSel?concSel.dataset.v:S.proto.conc,
+    doseKg:document.getElementById('eDoseKg').value.trim(),
+    doseActual:document.getElementById('eDoseActual').value.trim(),
+    note:document.getElementById('eNote').value.trim(),
+  });
+  save(); closeSheet('editSheet'); renderAll();
+  toast('Entry saved');
+});
+
+document.getElementById('editDeleteBtn').addEventListener('click',()=>{
+  if(!editKey||!S.logs[editKey]) return;
+  S.logs[editKey].done=false;
+  save(); closeSheet('editSheet'); renderAll();
+  toast('Entry removed');
+});
+
+document.getElementById('editCancelBtn').addEventListener('click',()=>closeSheet('editSheet'));
+
+/* ── PROTOCOL SHEET ── */
+document.getElementById('protoSettingsRow').addEventListener('click',()=>{
+  // Fill protocol sheet
+  document.querySelectorAll('#typePills .proto-pill').forEach(p=>p.classList.toggle('sel',p.dataset.v===S.proto.type));
+  document.querySelectorAll('#protoConc .conc-pill').forEach(p=>p.classList.toggle('sel',String(p.dataset.v)===String(S.proto.conc)));
+  document.getElementById('protoWeight').value=S.proto.weight||'';
+  openSheet('protoSheet');
+});
+document.getElementById('saveProtoBtn').addEventListener('click',()=>{
+  const tSel=document.querySelector('#typePills .proto-pill.sel');
+  const cSel=document.querySelector('#protoConc .conc-pill.sel');
+  S.proto.type=tSel?tSel.dataset.v:'';
+  S.proto.conc=cSel?cSel.dataset.v:30;
+  S.proto.weight=document.getElementById('protoWeight').value.trim();
+  save(); closeSheet('protoSheet'); renderToday();
+  toast('Protocol saved');
+});
+document.querySelectorAll('#typePills .proto-pill').forEach(p=>p.addEventListener('click',()=>{
+  document.querySelectorAll('#typePills .proto-pill').forEach(x=>x.classList.remove('sel'));
+  p.classList.add('sel');
+}));
+document.querySelectorAll('#protoConc .conc-pill').forEach(p=>p.addEventListener('click',()=>{
+  document.querySelectorAll('#protoConc .conc-pill').forEach(x=>x.classList.remove('sel'));
+  p.classList.add('sel');
+}));
+
+/* ── CAT NAME ── */
+document.getElementById('catChip').addEventListener('click',()=>{
+  document.getElementById('nameInput').value=S.name;
+  openSheet('nameSheet');
+  setTimeout(()=>document.getElementById('nameInput').focus(),350);
+});
+document.getElementById('saveNameBtn').addEventListener('click',()=>{
+  const n=document.getElementById('nameInput').value.trim();
+  if(n){S.name=n;save();renderToday();toast(`Tracking ${n}'s recovery 🐱`);}
+  closeSheet('nameSheet');
+});
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('saveNameBtn').click();});
+
+/* ── CONC PILLS (today) ── */
+document.querySelectorAll('#concPills .conc-pill').forEach(p=>p.addEventListener('click',()=>{
+  document.querySelectorAll('#concPills .conc-pill').forEach(x=>x.classList.remove('sel'));
+  p.classList.add('sel');
+  debounceFormSave();
+  // Auto-calc actual dose
+  const w=document.getElementById('iWeight').value||S.proto.weight;
+  const dkg=document.getElementById('iDoseKg').value||protoDoseKg();
+  const ml=calcDose(w,dkg,p.dataset.v);
+  if(ml) document.getElementById('iDoseActual').value=ml;
+}));
+
+/* ── AUTO-CALC dose on weight/doseKg change ── */
+['iWeight','iDoseKg'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    const w=document.getElementById('iWeight').value||S.proto.weight;
+    const dkg=document.getElementById('iDoseKg').value;
+    const concSel=document.querySelector('#concPills .conc-pill.sel');
+    const conc=concSel?concSel.dataset.v:S.proto.conc;
+    const ml=calcDose(w,dkg,conc);
+    if(ml) document.getElementById('iDoseActual').value=ml;
+    debounceFormSave();
+  });
+});
+['iTemp','iDoseActual','iNote'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',debounceFormSave);
+});
+
+/* ── EDIT sheet auto-calc ── */
+['eDoseKg','eWeight'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    const w=document.getElementById('eWeight').value;
+    const dkg=document.getElementById('eDoseKg').value;
+    const cSel=document.querySelector('#editConc .conc-pill.sel');
+    const conc=cSel?cSel.dataset.v:S.proto.conc;
+    const ml=calcDose(w,dkg,conc);
+    if(ml) document.getElementById('eDoseActual').value=ml;
+  });
+});
+document.querySelectorAll('#editConc .conc-pill').forEach(p=>p.addEventListener('click',()=>{
+  document.querySelectorAll('#editConc .conc-pill').forEach(x=>x.classList.remove('sel'));
+  p.classList.add('sel');
+  const w=document.getElementById('eWeight').value;
+  const dkg=document.getElementById('eDoseKg').value;
+  const ml=calcDose(w,dkg,p.dataset.v);
+  if(ml) document.getElementById('eDoseActual').value=ml;
+}));
+
+/* ── EXPORT ── */
+function buildCSVRows(){
+  const rows=[['Day','Date','Done','Temperature (°C)','Weight (kg)','Vial Conc (mg/ml)','Dose (mg/kg)','Actual Dose (ml)','Notes']];
+  for(let i=1;i<=TOTAL;i++){
+    const date=dayNDate(i);
+    const k=dkey(date);
+    const l=S.logs[k]||{};
+    rows.push([i,k,l.done?'Yes':'No',l.temp||'',l.weight||'',l.conc||'',l.doseKg||'',l.doseActual||'',l.note||'']);
+  }
+  return rows;
+}
+document.getElementById('exportCSV').addEventListener('click',()=>{
+  const rows=buildCSVRows();
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`fip-journal-${S.name||'cat'}.csv`});
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('CSV downloaded');
+});
+document.getElementById('exportExcel').addEventListener('click',()=>{
+  const rows=buildCSVRows();
+  // Build minimal XLSX using CSV + content-type trick (opens in Excel)
+  // For a true .xlsx we build a simple XML spreadsheet
+  const xmlRows=rows.map(r=>`<Row>${r.map(v=>`<Cell><Data ss:Type="String">${String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`).join('')}</Row>`).join('');
+  const xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="FIP Journal"><Table>${xmlRows}</Table></Worksheet></Workbook>`;
+  const blob=new Blob([xml],{type:'application/vnd.ms-excel'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`fip-journal-${S.name||'cat'}.xls`});
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Excel file downloaded');
+});
+
+/* ── SHEETS ── */
+function openSheet(id){ document.getElementById(id).classList.add('open'); }
+function closeSheet(id){ document.getElementById(id).classList.remove('open'); }
+['nameSheet','protoSheet','editSheet'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{
+    if(e.target===document.getElementById(id)) closeSheet(id);
+  });
+});
+
+/* ── TABS ── */
+document.querySelectorAll('.tb').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    activePage=btn.dataset.page;
+    document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+activePage).classList.add('active');
+    if(activePage==='calendar') renderCalendar();
+    if(activePage==='log') renderLog();
+  });
+});
+
+/* ── CAL NAV ── */
+document.getElementById('calPrev').addEventListener('click',()=>{calView.setMonth(calView.getMonth()-1);renderCalendar();});
+document.getElementById('calNext').addEventListener('click',()=>{calView.setMonth(calView.getMonth()+1);renderCalendar();});
+
+/* ── TOAST ── */
+let _tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+/* ── RENDER ALL ── */
+function renderAll(){
+  renderToday();
+  if(activePage==='calendar') renderCalendar();
+  if(activePage==='log') renderLog();
+}
+
+/* ── BOOT ── */
+load();
+
+// Seed days 1, 2, 3 as done if not present
+(function seed(){
+  [[2026,5,23,'First dose — 8:20 PM'],[2026,5,24,''],[2026,5,25,'']].forEach(([y,m,d,note],i)=>{
+    const k=dkey(new Date(y,m,d));
+    if(!S.logs[k]){
+      const ts=new Date(y,m,d,20,20,0).getTime()+(i>0?i*86400000:0);
+      S.logs[k]={done:true,ts:new Date(y,m,d,20,20).getTime(),
+        doseKg:S.proto.doseKg||'',doseActual:'',conc:S.proto.conc||30,
+        temp:'',weight:'',note};
+    }
+  });
+  save();
+})();
+
+renderAll();
+calView=new Date(2026,5,1);
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
