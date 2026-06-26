@@ -4,8 +4,8 @@
   "description": "84-day FIP injection tracker",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
