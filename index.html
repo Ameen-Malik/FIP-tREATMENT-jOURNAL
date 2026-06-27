@@ -9,29 +9,34 @@
 <meta name="theme-color" content="#F2F2F7" id="themeColorMeta"/>
 <title>FIP Journal</title>
 <link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/svg+xml" href="icon.svg"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 
 /* ── LIGHT (default) ── */
 :root{
-  --bg:#F2F2F7;--s1:#fff;--s2:#E5E5EA;--s3:#D1D1D6;
-  --ov:rgba(242,242,247,0.92);
-  --l1:#000;--l2:rgba(60,60,67,0.6);--l3:rgba(60,60,67,0.3);--l4:rgba(60,60,67,0.1);
-  --green:#34C759;--gd:rgba(52,199,89,0.14);
-  --blue:#007AFF;--bd:rgba(0,122,255,0.14);
-  --red:#FF3B30;--rd:rgba(255,59,48,0.12);
+  --bg:#F5F5F7;--s1:#ffffff;--s2:#F2F2F7;--s3:#E5E5EA;
+  --ov:rgba(255,255,255,0.7);
+  --l1:#000000;--l2:rgba(60,60,67,0.65);--l3:rgba(60,60,67,0.4);--l4:rgba(60,60,67,0.12);
+  --green:#34C759;--gd:rgba(52,199,89,0.12);
+  --blue:#007AFF;--bd:rgba(0,122,255,0.12);
+  --red:#FF3B30;--rd:rgba(255,59,48,0.1);
   --orange:#FF9500;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;
-  --rc:14px;--rs:10px;
+  --font:"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --rc:16px;--rs:12px;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
 }
 /* ── DARK ── */
 [data-theme="dark"]{
-  --bg:#000;--s1:#1C1C1E;--s2:#2C2C2E;--s3:#3A3A3C;
-  --ov:rgba(20,20,22,0.92);
-  --l1:#fff;--l2:rgba(235,235,245,0.55);--l3:rgba(235,235,245,0.25);--l4:rgba(235,235,245,0.09);
-  --green:#30D158;--gd:rgba(48,209,88,0.14);
+  --bg:#000000;--s1:#1C1C1E;--s2:#2C2C2E;--s3:#3A3A3C;
+  --ov:rgba(28,28,30,0.65);
+  --l1:#ffffff;--l2:rgba(235,235,245,0.6);--l3:rgba(235,235,245,0.35);--l4:rgba(235,235,245,0.12);
+  --green:#30D158;--gd:rgba(48,209,88,0.15);
   --blue:#0A84FF;--bd:rgba(10,132,255,0.15);
   --red:#FF453A;--rd:rgba(255,69,58,0.12);
   --orange:#FF9F0A;
@@ -46,253 +51,525 @@ html{-webkit-text-size-adjust:100%}
 }
 .theme-btn:active{opacity:.5}
 body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100dvh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-.shell{max-width:390px;margin:0 auto;padding-bottom:calc(80px + var(--sb))}
+.shell{max-width:390px;margin:0 auto;padding-bottom:calc(105px + var(--sb))}
 
 /* ── NAV ── */
 .nav{
   position:sticky;top:0;z-index:99;
   padding:calc(var(--st) + 14px) 20px 12px;
   background:var(--ov);
-  backdrop-filter:saturate(180%) blur(24px);
-  -webkit-backdrop-filter:saturate(180%) blur(24px);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
   border-bottom:.5px solid var(--l4);
 }
 .nav-row{display:flex;align-items:center;justify-content:space-between}
-.nav-title{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.nav-title{font-size:18px;font-weight:700;letter-spacing:-.4px}
 .nav-btn{
   display:flex;align-items:center;gap:6px;
-  background:var(--s2);border:none;border-radius:20px;
-  padding:6px 12px 6px 8px;
-  color:var(--l1);font-family:var(--font);font-size:13px;font-weight:500;
+  background:var(--s1);border:1px solid var(--l4);border-radius:20px;
+  padding:6px 12px;
+  color:var(--l1);font-family:var(--font);font-size:13px;font-weight:600;
   cursor:pointer;transition:opacity .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.02);
 }
 .nav-btn:active{opacity:.5}
 
 /* ── TAB BAR ── */
 .tabbar{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:390px;
+  position:fixed;bottom:calc(14px + var(--sb));left:50%;transform:translateX(-50%);
+  width:calc(100% - 32px);max-width:358px;
   background:var(--ov);
   backdrop-filter:saturate(180%) blur(24px);
   -webkit-backdrop-filter:saturate(180%) blur(24px);
-  border-top:.5px solid var(--l4);
-  display:flex;padding-bottom:var(--sb);z-index:99;
+  border:1px solid rgba(255,255,255,0.4);
+  border-radius:24px;
+  display:flex;padding:8px 6px;z-index:99;
+  box-shadow:0 8px 32px rgba(0,0,0,0.05);
+  transition:background .3s, border-color .3s, box-shadow .3s;
+}
+[data-theme="dark"] .tabbar {
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 32px rgba(0,0,0,0.25);
 }
 .tb{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:9px 0 2px;font-size:10px;font-weight:500;letter-spacing:.1px;
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 0 4px;font-size:10px;font-weight:600;letter-spacing:.2px;
   color:var(--l3);border:none;background:none;cursor:pointer;
-  transition:color .2s;font-family:var(--font);
+  transition:color .2s, transform .12s;font-family:var(--font);
 }
-.tb svg{width:23px;height:23px;stroke-width:1.6}
+.tb svg{width:22px;height:22px;stroke-width:2;transition:transform .2s}
+.tb:active svg{transform:scale(.9)}
 .tb.active{color:var(--blue)}
 
 /* ── PAGES ── */
-.page{display:none}
-.page.active{display:block}
+.page{
+  display:none;
+}
+.page.active{
+  display:block;
+  animation: pageFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* ── TODAY PAGE ── */
 #page-today{padding:0}
 
-/* Hero — full-bleed top card */
-.hero{
-  padding:28px 24px 24px;
-  display:flex;align-items:center;gap:24px;
-  border-bottom:.5px solid var(--l4);
+/* Dashboard Card */
+.dashboard-card {
+  background:var(--s1);
+  border-radius:20px;
+  padding:24px;
+  margin:16px 16px 12px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.02);
+  border:1.5px solid var(--l4);
+  transition:background .3s, border-color .3s, box-shadow .3s;
 }
-.ring-wrap{position:relative;flex-shrink:0;width:96px;height:96px}
-.ring-svg{width:96px;height:96px;transform:rotate(-90deg)}
-.ring-track{fill:none;stroke:var(--s3);stroke-width:7}
-.ring-fill{
-  fill:none;stroke:var(--green);stroke-width:7;stroke-linecap:round;
-  transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1);
+[data-theme="dark"] .dashboard-card {
+  border-color:var(--l4);
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
 }
-.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
-.ring-day{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1}
-.ring-of{font-size:9px;color:var(--l3);font-weight:500;letter-spacing:.4px;margin-top:2px}
-.hero-right{flex:1;min-width:0}
-.hero-name{font-size:13px;color:var(--l2);margin-bottom:4px;font-weight:400}
-.hero-status{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.1;margin-bottom:10px}
-.hero-meta{display:flex;gap:14px}
-.hm{display:flex;flex-direction:column;gap:1px}
-.hm-val{font-size:17px;font-weight:600;letter-spacing:-.4px}
-.hm-key{font-size:10px;color:var(--l3);font-weight:400}
+.db-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:18px;
+}
+.db-title-wrap {
+  display:flex;
+  flex-direction:column;
+}
+.db-cat-name {
+  font-size:13px;
+  font-weight:600;
+  color:var(--l2);
+  letter-spacing:-.1px;
+  margin-bottom:3px;
+}
+.db-day-title {
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:-.6px;
+  line-height:1.1;
+  color:var(--l1);
+}
+.db-badge {
+  font-size:11px;
+  font-weight:700;
+  color:var(--blue);
+  background:var(--bd);
+  padding:4px 9px;
+  border-radius:8px;
+  letter-spacing:.2px;
+}
+.db-progress-container {
+  margin-bottom:20px;
+}
+.db-progress-bar {
+  height:8px;
+  background:var(--s2);
+  border-radius:4px;
+  overflow:hidden;
+  position:relative;
+}
+.db-progress-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--green), #30D158);
+  border-radius:4px;
+  transition:width .9s cubic-bezier(.16,1,.3,1);
+}
+.db-progress-labels {
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:11px;
+  color:var(--l3);
+  font-weight:600;
+}
+.db-stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  padding-top:18px;
+  border-top:1px solid var(--l4);
+}
+.db-stat-item {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.db-stat-val {
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:-.4px;
+  margin-bottom:2px;
+}
+.db-stat-lbl {
+  font-size:10px;
+  color:var(--l3);
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
 
-/* Progress bar under hero */
-.prog-bar-wrap{padding:0 24px 20px;border-bottom:.5px solid var(--l4)}
-.prog-bar-track{height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
-.prog-bar-fill{height:100%;background:var(--green);border-radius:2px;transition:width .9s cubic-bezier(.4,0,.2,1)}
-.prog-labels{display:flex;justify-content:space-between;margin-top:6px}
-.prog-lbl{font-size:11px;color:var(--l3)}
+/* TODAY CTA & PRESS AND HOLD */
+.today-cta{padding:16px 24px 24px;display:flex;flex-direction:column;gap:12px;border-bottom:none}
+.cta-date{font-size:13px;color:var(--l2);font-weight:700;letter-spacing:-0.1px;text-align:center}
 
-/* TODAY CTA */
-.today-cta{padding:20px 24px;border-bottom:.5px solid var(--l4)}
-.cta-date{font-size:13px;color:var(--l2);margin-bottom:12px;font-weight:400}
-.mark-btn{
-  width:100%;padding:15px;border-radius:12px;border:none;
-  font-family:var(--font);font-size:16px;font-weight:600;letter-spacing:-.2px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:opacity .15s,transform .12s;
+.hold-to-confirm {
+  width: 100%;
+  height: 56px;
+  background: var(--s2);
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--l4);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
-.mark-btn:active{opacity:.72;transform:scale(.98)}
-.mark-btn.idle{background:var(--blue);color:#fff}
-.mark-btn.logged{background:var(--gd);color:var(--green)}
+.hold-to-confirm:active {
+  transform: scale(0.98);
+}
+.hold-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--blue);
+  opacity: 0.15;
+  transition: width 0.1s linear;
+}
+.hold-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue);
+  pointer-events: none;
+  transition: color 0.4s, transform 0.2s;
+  letter-spacing: -0.2px;
+}
+.hold-icon {
+  font-size: 16px;
+  transition: transform 0.2s;
+}
 
-/* LOG QUICK FORM — revealed after mark */
-.log-form{
-  padding:0 24px 20px;border-bottom:.5px solid var(--l4);
-  display:none;
+/* Completed State */
+.hold-to-confirm.completed {
+  background: var(--green);
+  border-color: rgba(48, 209, 88, 0.2);
+  box-shadow: 0 4px 14px var(--gd);
 }
-.log-form.visible{display:block}
-.lf-title{font-size:13px;color:var(--l2);font-weight:500;margin-bottom:10px;margin-top:16px}
+.hold-to-confirm.completed .hold-progress {
+  width: 100% !important;
+  opacity: 0;
+}
+.hold-to-confirm.completed .hold-content {
+  color: #ffffff;
+}
+
+/* Log Form Layout Re-style */
+.log-form {
+  padding: 0 16px;
+}
+.lf-title {
+  font-size: 11px;
+  color: var(--l3);
+  font-weight: 700;
+  margin-bottom: 8px;
+  margin-top: 16px;
+  padding: 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.fg-inp:disabled {
+  color: var(--l2);
+  opacity: 0.7;
+}
+.pill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── LOGGED SUCCESS CARD & CHECKMARK ANIMATION ── */
+.logged-state-card {
+  background: var(--s1);
+  border-radius: 20px;
+  padding: 32px 24px;
+  margin: 16px 16px 20px;
+  border: 1.5px solid var(--l4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: pageFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+[data-theme="dark"] .logged-state-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.logged-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: var(--l1);
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+.logged-streak-msg {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.logged-guidance {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--l3);
+  line-height: 1.5;
+  margin-bottom: 0;
+  max-width: 280px;
+}
+
+/* Success Checkmark Drawing Animation */
+.success-checkmark {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  display: block;
+}
+.checkmark-svg {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  stroke: var(--green);
+  stroke-width: 4;
+  stroke-miterlimit: 10;
+  box-shadow: inset 0 0 0 var(--green);
+  animation: check-fill .4s ease-in-out .3s forwards, check-scale .3s ease-in-out .8s both;
+}
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 4;
+  stroke-miterlimit: 10;
+  stroke: var(--green);
+  fill: none;
+  animation: check-stroke .6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke: #ffffff;
+  animation: check-stroke-check .3s cubic-bezier(0.16, 1, 0.3, 1) .5s forwards;
+}
+@keyframes check-stroke {
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes check-stroke-check {
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes check-fill {
+  100% { box-shadow: inset 0 0 0 36px var(--green); }
+}
+@keyframes check-scale {
+  0%, 100% { transform: none; }
+  50% { transform: scale3d(1.08, 1.08, 1); }
+}
 
 /* Inline field groups */
 .field-group{
-  background:var(--s1);border-radius:var(--rc);overflow:hidden;margin-bottom:8px;
+  background:var(--s1);border-radius:var(--rc);overflow:hidden;margin-bottom:12px;
+  border:1px solid var(--l4);
+  box-shadow:0 1px 3px rgba(0,0,0,0.01);
 }
 .fg-row{
   display:flex;align-items:center;
-  padding:13px 16px;
-  border-bottom:.5px solid var(--l4);
+  padding:14px 16px;
+  border-bottom:1px solid var(--l4);
   gap:12px;
 }
 .fg-row:last-child{border-bottom:none}
-.fg-lbl{font-size:15px;color:var(--l2);flex:1}
+.fg-lbl{font-size:15px;color:var(--l2);font-weight:600}
 .fg-inp{
   background:transparent;border:none;outline:none;
   font-family:var(--font);font-size:15px;color:var(--l1);
   text-align:right;width:120px;
   -webkit-appearance:none;
+  font-weight:600;
 }
 .fg-inp::placeholder{color:var(--l3)}
 .fg-inp::-webkit-inner-spin-button{-webkit-appearance:none}
 
 /* Pill selectors */
-.pill-row{display:flex;gap:6px;padding:12px 16px}
+.pill-row{display:flex;gap:8px;padding:12px 16px}
 .pill{
-  flex:1;padding:8px 4px;text-align:center;border-radius:8px;
+  flex:1;padding:10px 4px;text-align:center;border-radius:10px;
   background:var(--s2);border:none;color:var(--l2);
-  font-family:var(--font);font-size:13px;font-weight:500;
-  cursor:pointer;transition:background .15s,color .15s;
+  font-family:var(--font);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.pill.sel{background:var(--bd);color:var(--blue)}
-.pill-label{font-size:11px;color:var(--l3);padding:0 16px 4px;font-weight:500;letter-spacing:.1px}
+.pill.sel{background:var(--blue);color:#ffffff;box-shadow:0 2px 8px var(--bd)}
+.pill-label{font-size:11px;color:var(--l3);padding:0 16px 4px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
 
-.ta-wrap{background:var(--s1);border-radius:var(--rc);padding:2px 0;margin-bottom:8px}
+.ta-wrap{
+  background:var(--s1);border-radius:var(--rc);padding:2px 0;margin-bottom:12px;
+  border:1px solid var(--l4);
+  box-shadow:0 1px 3px rgba(0,0,0,0.01);
+}
 .ta{
   width:100%;background:transparent;border:none;outline:none;resize:none;
   font-family:var(--font);font-size:15px;color:var(--l1);line-height:1.5;
-  padding:12px 16px;min-height:72px;
+  padding:14px 16px;min-height:76px;
+  font-weight:500;
 }
 .ta::placeholder{color:var(--l3)}
 
 /* QUICK INFO ROWS */
-.info-rows{margin:0}
+.info-rows{
+  background:var(--s1);border-radius:var(--rc);overflow:hidden;
+  border:1px solid var(--l4);margin:0 16px 16px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.01);
+}
 .ir{
   display:flex;align-items:center;
-  padding:14px 24px;gap:14px;
-  border-bottom:.5px solid var(--l4);
+  padding:16px 20px;gap:14px;
+  border-bottom:1px solid var(--l4);
   cursor:pointer;
+  transition:background-color 0.2s;
 }
 .ir:last-child{border-bottom:none}
-.ir-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.ir:active{background-color:var(--s2)}
+.ir-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0}
 .ir-body{flex:1;min-width:0}
-.ir-title{font-size:15px;font-weight:400;letter-spacing:-.2px}
-.ir-sub{font-size:12px;color:var(--l3);margin-top:1px}
+.ir-title{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.ir-sub{font-size:12px;color:var(--l3);margin-top:2px;font-weight:500}
 .ir-right{font-size:13px;color:var(--l2);flex-shrink:0}
-.ir-arr{color:var(--l3);font-size:20px;line-height:1;flex-shrink:0;margin-left:2px}
+.ir-arr{color:var(--l3);font-size:18px;line-height:1;flex-shrink:0;margin-left:2px;font-weight:600}
 
 /* EXPORT */
-.export-row{display:flex;gap:8px;padding:16px 24px;border-bottom:.5px solid var(--l4)}
+.export-row{display:flex;gap:10px;padding:8px 16px 24px;border-bottom:none}
 .exp-btn{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:11px;border-radius:var(--rs);background:var(--s1);border:none;
-  color:var(--l2);font-family:var(--font);font-size:13px;font-weight:500;
-  cursor:pointer;transition:opacity .15s;
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;border-radius:var(--rs);background:var(--s1);
+  border:1px solid var(--l4);
+  color:var(--l2);font-family:var(--font);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:0 2px 6px rgba(0,0,0,0.01);
 }
-.exp-btn:active{opacity:.55}
+.exp-btn:active{transform:scale(0.97);background:var(--s2)}
 
 /* ── CALENDAR PAGE ── */
 #page-calendar{padding:20px 16px 0}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.cal-month{font-size:20px;font-weight:700;letter-spacing:-.5px}
-.cal-navs{display:flex;gap:6px}
+.cal-month{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.cal-navs{display:flex;gap:8px}
 .cal-nav{
-  width:30px;height:30px;border-radius:50%;background:var(--s2);
-  border:none;color:var(--l1);font-size:17px;cursor:pointer;
+  width:32px;height:32px;border-radius:50%;background:var(--s1);
+  border:1px solid var(--l4);color:var(--l1);font-size:16px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--font);transition:background .15s;
+  font-family:var(--font);transition:all .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.02);
 }
-.cal-nav:active{background:var(--s3)}
+.cal-nav:active{background:var(--s2);transform:scale(0.92)}
 
-.cal-grid{background:var(--s1);border-radius:var(--rc);padding:12px 10px 14px;margin-bottom:10px}
-.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px}
-.cal-dow{text-align:center;font-size:11px;font-weight:600;color:var(--l3);padding:3px 0;letter-spacing:.2px}
-.cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:3px}
+.cal-grid{
+  background:var(--s1);border-radius:var(--rc);padding:16px 14px;margin-bottom:14px;
+  border:1.5px solid var(--l4);
+  box-shadow:0 4px 20px rgba(0,0,0,0.02);
+}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px}
+.cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--l3);padding:3px 0;letter-spacing:.4px;text-transform:uppercase}
+.cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:6px;column-gap:6px}
 .cd{
   aspect-ratio:1;display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:400;border-radius:50%;
+  font-size:14px;font-weight:600;border-radius:50%;
   cursor:pointer;border:none;background:none;color:var(--l1);
   font-family:var(--font);position:relative;
-  transition:opacity .1s;
+  transition:all .15s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-appearance:none;
 }
-.cd:active{opacity:.5}
+.cd:active{transform:scale(0.85);opacity:.7}
 .cd.empty{cursor:default;pointer-events:none}
 .cd.out{color:var(--l3);cursor:default}
 .cd.future{color:var(--l3)}
-.cd.today-c{font-weight:700;color:var(--blue)}
+.cd.today-c{font-weight:800;color:var(--blue);background:var(--bd)}
 .cd.today-c::after{
-  content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
-  width:3px;height:3px;border-radius:50%;background:var(--blue);
+  content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--blue);
 }
-.cd.done-c{background:var(--green);color:#000;font-weight:600}
-.cd.done-c.today-c::after{background:#000}
-.cd.missed-c{color:var(--red)}
+.cd.done-c{background:var(--green);color:#ffffff;font-weight:700}
+.cd.done-c.today-c::after{background:#ffffff}
+.cd.missed-c{background:var(--rd);color:var(--red);font-weight:700}
 
 .cal-legend{display:flex;gap:16px;padding:4px 4px 0;flex-wrap:wrap}
-.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--l3)}
-.leg-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--l3);font-weight:600}
+.leg-pip{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 
 /* Day detail card */
 .day-card{
-  background:var(--s1);border-radius:var(--rc);padding:16px;
-  margin-bottom:10px;display:none;
+  background:var(--s1);border-radius:var(--rc);padding:18px;
+  margin-bottom:14px;display:none;
+  border:1.5px solid var(--l4);
+  box-shadow:0 4px 20px rgba(0,0,0,0.02);
 }
 .day-card.open{display:block}
-.dc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.dc-date{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.dc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dc-date{font-size:16px;font-weight:700;letter-spacing:-.3px}
 .dc-day-badge{
-  font-size:11px;font-weight:600;color:var(--green);
-  background:var(--gd);padding:3px 8px;border-radius:10px;
+  font-size:11px;font-weight:700;color:var(--green);
+  background:var(--gd);padding:4px 9px;border-radius:8px;
 }
-.dc-body{display:flex;flex-direction:column;gap:6px}
-.dc-row{font-size:14px;color:var(--l2);display:flex;align-items:center;gap:8px}
-.dc-row span{color:var(--l1);font-weight:500}
-.dc-actions{display:flex;gap:8px;margin-top:12px}
+.dc-body{display:flex;flex-direction:column;gap:8px}
+.dc-row{font-size:14px;color:var(--l2);display:flex;align-items:center;gap:8px;font-weight:500}
+.dc-row span{color:var(--l1);font-weight:600}
+.dc-actions{display:flex;gap:8px;margin-top:14px}
 .dc-btn{
-  flex:1;padding:10px;border-radius:var(--rs);border:none;
-  font-family:var(--font);font-size:14px;font-weight:600;
-  cursor:pointer;transition:opacity .15s;
+  flex:1;padding:12px;border-radius:var(--rs);border:none;
+  font-family:var(--font);font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .15s;
 }
-.dc-btn:active{opacity:.6}
-.dc-btn-blue{background:var(--bd);color:var(--blue)}
+.dc-btn:active{transform:scale(0.97);opacity:.8}
+.dc-btn-blue{background:var(--blue);color:#ffffff;box-shadow:0 2px 8px var(--bd)}
 .dc-btn-ghost{background:var(--s2);color:var(--l2)}
 
 /* ── LOG PAGE ── */
 #page-log{padding:20px 16px 0}
-.log-title{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:16px}
+.log-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:16px}
 .log-item{
-  background:var(--s1);border-radius:var(--rc);padding:14px 16px;
-  margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;
-  cursor:pointer;transition:opacity .15s;
+  background:var(--s1);border-radius:var(--rc);padding:16px;
+  margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;
+  cursor:pointer;transition:all .2s cubic-bezier(0.16, 1, 0.3, 1);
+  border:1.5px solid var(--l4);
+  box-shadow:0 2px 10px rgba(0,0,0,0.01);
 }
-.log-item:active{opacity:.55}
+.log-item:active{transform:scale(0.98);opacity:.85}
 .log-badge{
-  width:36px;height:36px;border-radius:9px;
+  width:40px;height:40px;border-radius:10px;
   background:var(--gd);color:var(--green);
   display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;flex-shrink:0;
+  font-size:14px;font-weight:800;flex-shrink:0;
 }
 .log-body{flex:1;min-width:0}
 .log-date{font-size:12px;color:var(--l3);margin-bottom:3px}
@@ -362,9 +639,80 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ── SPLASH SCREEN ── */
+#splash-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease, visibility 0.4s;
+  visibility: visible;
+  opacity: 1;
+}
+#splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--blue);
+}
+.splash-cat {
+  animation: pulse-cat 1.6s infinite ease-in-out;
+}
+.splash-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--l1);
+}
+@keyframes pulse-cat {
+  0%, 100% {
+    transform: scale(0.94);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+    color: var(--green);
+  }
+}
 </style>
 </head>
 <body>
+<!-- Splash Screen -->
+<div id="splash-screen">
+  <div class="splash-content">
+    <svg class="splash-cat" viewBox="0 0 512 512" width="120" height="120" fill="none">
+      <defs>
+        <filter id="splashGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      <rect x="12" y="12" width="488" height="488" rx="108" stroke="#0A84FF" stroke-width="12" fill="none"/>
+      <g transform="translate(0, 5)">
+        <path d="M195 160 L210 90 L245 145 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M317 160 L302 90 L267 145 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="256" cy="180" r="55" stroke="#FFFFFF" stroke-width="12" fill="none"/>
+        <path d="M222 178 C226 186, 238 186, 242 178" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+        <path d="M270 178 C274 186, 286 186, 290 178" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+        <path d="M251 196 L256 201 L261 196" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M190 230 C160 300, 170 410, 256 410 C342 410, 352 300, 322 230 Z" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round" fill="none"/>
+        <path d="M322 360 C380 360, 390 280, 360 250 C345 235, 335 250, 345 260 C355 270, 350 320, 320 320" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+        <path d="M256 315 C256 315, 226 280, 226 260 C226 242, 238 232, 256 232 C274 232, 286 242, 286 260 C286 280, 256 315, 256 315 Z" fill="#30D158" filter="url(#splashGlow)"/>
+      </g>
+    </svg>
+    <div class="splash-title">FIP Journal</div>
+  </div>
+</div>
 <div class="shell">
 
 <!-- NAV -->
@@ -381,50 +729,55 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 <!-- TODAY -->
 <div class="page active" id="page-today">
 
-  <!-- Hero -->
-  <div class="hero">
-    <div class="ring-wrap">
-      <svg class="ring-svg" viewBox="0 0 96 96">
-        <circle class="ring-track" cx="48" cy="48" r="40"/>
-        <circle class="ring-fill" id="ringFill" cx="48" cy="48" r="40"
-          stroke-dasharray="251.33" stroke-dashoffset="251.33"/>
+  <!-- Dashboard Card -->
+  <div class="dashboard-card">
+    <div class="db-header">
+      <div class="db-title-wrap">
+        <span class="db-cat-name" id="heroName">Treatment day</span>
+        <h1 class="db-day-title" id="heroStatus">Day 1</h1>
+      </div>
+      <div class="db-badge">84 DAYS TOTAL</div>
+    </div>
+    <div class="db-progress-container">
+      <div class="db-progress-bar">
+        <div class="db-progress-fill" id="progFill" style="width:0%"></div>
+      </div>
+      <div class="db-progress-labels">
+        <span>23 Jun 2026</span>
+        <span id="progPct">0%</span>
+        <span id="endDateLbl">—</span>
+      </div>
+    </div>
+    <div class="db-stats">
+      <div class="db-stat-item">
+        <span class="db-stat-val" id="hmDone" style="color:var(--green)">0</span>
+        <span class="db-stat-lbl">Done</span>
+      </div>
+      <div class="db-stat-item">
+        <span class="db-stat-val" id="hmLeft" style="color:var(--orange)">84</span>
+        <span class="db-stat-lbl">Left</span>
+      </div>
+      <div class="db-stat-item">
+        <span class="db-stat-val" id="hmStreak" style="color:var(--blue)">0</span>
+        <span class="db-stat-lbl">Streak</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logged State Card (shown when complete) -->
+  <div class="logged-state-card" id="loggedStateCard" style="display: none;">
+    <div class="success-checkmark">
+      <svg class="checkmark-svg" viewBox="0 0 52 52">
+        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="checkmark-check" fill="none" d="M14.1 27.2 l7.1 7.2 l16.7 -16.8"/>
       </svg>
-      <div class="ring-center">
-        <div class="ring-day" id="heroDay">1</div>
-        <div class="ring-of">OF 84</div>
-      </div>
     </div>
-    <div class="hero-right">
-      <div class="hero-name" id="heroName">Treatment day</div>
-      <div class="hero-status" id="heroStatus">Day 1</div>
-      <div class="hero-meta">
-        <div class="hm"><div class="hm-val" id="hmDone" style="color:var(--green)">0</div><div class="hm-key">Done</div></div>
-        <div class="hm"><div class="hm-val" id="hmLeft" style="color:var(--orange)">84</div><div class="hm-key">Left</div></div>
-        <div class="hm"><div class="hm-val" id="hmStreak">0</div><div class="hm-key">Streak</div></div>
-      </div>
-    </div>
+    <h2 class="logged-title">Today's Entry Logged! 🎉</h2>
+    <p class="logged-streak-msg" id="loggedStreakMsg">One step closer to recovery! 🐾</p>
+    <p class="logged-guidance">Head over to the Log or Calendar tab to view the readings.</p>
   </div>
 
-  <!-- Progress bar -->
-  <div class="prog-bar-wrap">
-    <div class="prog-bar-track"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
-    <div class="prog-labels">
-      <span class="prog-lbl">23 Jun 2026</span>
-      <span class="prog-lbl" id="progPct">0%</span>
-      <span class="prog-lbl" id="endDateLbl">—</span>
-    </div>
-  </div>
-
-  <!-- CTA -->
-  <div class="today-cta">
-    <div class="cta-date" id="ctaDate">—</div>
-    <button class="mark-btn idle" id="markBtn">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      <span id="markLbl">Mark injection done</span>
-    </button>
-  </div>
-
-  <!-- Log form (shown when done) -->
+  <!-- Log form (always visible now) -->
   <div class="log-form" id="logForm">
     <div class="lf-title">Today's details</div>
 
@@ -461,6 +814,18 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 
     <div class="ta-wrap">
       <textarea class="ta" id="iNote" placeholder="Notes, observations…"></textarea>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="today-cta">
+    <div class="cta-date" id="ctaDate">—</div>
+    <div class="hold-to-confirm" id="holdContainer">
+      <div class="hold-progress" id="holdProgress"></div>
+      <div class="hold-content">
+        <span class="hold-icon" id="holdIcon">🔘</span>
+        <span class="hold-text" id="holdText">Press & Hold to Log Injection</span>
+      </div>
     </div>
   </div>
 
@@ -700,20 +1065,95 @@ function stats() {
   return {done, missed, streak, left: TOTAL-done};
 }
 
+/* ── HOLD TO CONFIRM LOGIC ── */
+function updateHoldButtonState(done) {
+  const container = document.getElementById('holdContainer');
+  const icon = document.getElementById('holdIcon');
+  const text = document.getElementById('holdText');
+  const progress = document.getElementById('holdProgress');
+
+  progress.style.width = done ? '100%' : '0%';
+  
+  if (done) {
+    container.classList.add('completed');
+    icon.textContent = '✓';
+    text.textContent = 'Logged ✓ — Tap to Undo';
+  } else {
+    container.classList.remove('completed');
+    icon.textContent = '🔘';
+    text.textContent = 'Press & Hold to Log Injection';
+  }
+}
+
+function initHoldToConfirm() {
+  const container = document.getElementById('holdContainer');
+  const progress = document.getElementById('holdProgress');
+  
+  let isHolding = false;
+  let holdStart = 0;
+  let holdDuration = 1200; // 1.2s
+  let holdInterval = null;
+
+  const startHold = (e) => {
+    if (container.classList.contains('completed')) return;
+    isHolding = true;
+    holdStart = Date.now();
+    
+    progress.style.transition = 'width 0.1s linear';
+    
+    holdInterval = setInterval(() => {
+      const elapsed = Date.now() - holdStart;
+      const pct = Math.min(100, (elapsed / holdDuration) * 100);
+      progress.style.width = pct + '%';
+      
+      const scale = 1 - (elapsed / holdDuration) * 0.03;
+      container.style.transform = `scale(${scale})`;
+
+      if (elapsed >= holdDuration) {
+        clearInterval(holdInterval);
+        isHolding = false;
+        container.style.transform = '';
+        markToday();
+      }
+    }, 50);
+
+    e.preventDefault();
+  };
+
+  const cancelHold = () => {
+    if (!isHolding) return;
+    isHolding = false;
+    clearInterval(holdInterval);
+    
+    container.style.transform = '';
+    progress.style.transition = 'width 0.3s ease-out';
+    progress.style.width = '0%';
+  };
+
+  container.addEventListener('mousedown', startHold);
+  container.addEventListener('mouseleave', cancelHold);
+  container.addEventListener('mouseup', cancelHold);
+
+  container.addEventListener('touchstart', startHold, { passive: false });
+  container.addEventListener('touchend', cancelHold);
+  container.addEventListener('touchcancel', cancelHold);
+
+  container.addEventListener('click', () => {
+    if (container.classList.contains('completed')) {
+      undoToday();
+    }
+  });
+}
+
 /* ── RENDER TODAY ── */
 function renderToday() {
   const day = curDay(), st = stats(), tk = todayKey(), log = S.logs[tk]||{};
   const now = new Date();
 
-  // Ring
-  const circ = 2*Math.PI*40; // 251.33
-  document.getElementById('ringFill').style.strokeDashoffset = circ*(1 - st.done/TOTAL);
-  document.getElementById('heroDay').textContent = day;
-
   // Cat name
   document.getElementById('catName').textContent = S.name||'Set name';
   document.getElementById('heroName').textContent = S.name ? `${S.name}'s treatment` : 'Treatment day';
-  document.getElementById('heroStatus').textContent = `Day ${day} of ${TOTAL}`;
+  document.getElementById('heroStatus').textContent = `Day ${day}`;
 
   // Stats
   document.getElementById('hmDone').textContent = st.done;
@@ -735,19 +1175,30 @@ function renderToday() {
   // CTA date
   document.getElementById('ctaDate').textContent = fmtFull(now);
 
-  // Mark button + form
-  const btn = document.getElementById('markBtn');
-  const form = document.getElementById('logForm');
-  if (log.done) {
-    btn.className = 'mark-btn logged';
-    document.getElementById('markLbl').textContent = 'Logged  ✓  —  tap to undo';
-    btn.onclick = undoToday;
-    form.classList.add('visible');
+  // Update Hold Button state, form visibility and dynamic gamified message
+  const done = !!log.done;
+  updateHoldButtonState(done);
+
+  const logForm = document.getElementById('logForm');
+  const loggedCard = document.getElementById('loggedStateCard');
+  if (done) {
+    logForm.style.display = 'none';
+    loggedCard.style.display = 'flex';
+    
+    const catName = S.name || 'your cat';
+    document.getElementById('loggedStreakMsg').textContent = `One step closer to saving ${catName}! 🐾`;
   } else {
-    btn.className = 'mark-btn idle';
-    document.getElementById('markLbl').textContent = 'Mark injection done';
-    btn.onclick = markToday;
-    form.classList.remove('visible');
+    logForm.style.display = 'block';
+    loggedCard.style.display = 'none';
+    
+    // Unlock form inputs
+    const inputs = ['iTemp', 'iWeight', 'iDoseKg', 'iActual', 'iNote'];
+    inputs.forEach(id => {
+      document.getElementById(id).disabled = false;
+    });
+    document.querySelectorAll('#concPills .pill').forEach(p => {
+      p.disabled = false;
+    });
   }
 
   // Restore form values
@@ -1142,6 +1593,7 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
 
 /* ── BOOT ── */
 load();
+initHoldToConfirm();
 
 // Seed days 1-3 as done if not already set
 (function seed() {
@@ -1159,6 +1611,10 @@ load();
 })();
 
 renderAll();
+setTimeout(() => {
+  const splash = document.getElementById('splash-screen');
+  if (splash) splash.classList.add('fade-out');
+}, 1200);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
