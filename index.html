@@ -749,6 +749,149 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     color: var(--green);
   }
 }
+
+/* ── RESPONSIVE & ADAPTIVE STYLES (TABLET & DESKTOP) ── */
+.day-card-placeholder {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .shell {
+    max-width: 460px;
+  }
+}
+
+@media (min-width: 768px) {
+  .shell {
+    max-width: 720px;
+  }
+  .tabbar {
+    max-width: 460px;
+  }
+  
+  /* Sheets centering on tablets/desktop */
+  .sheet-ov {
+    align-items: center;
+    padding: 20px;
+  }
+  .sheet {
+    border-radius: 20px;
+    max-width: 480px;
+    transform: translateY(20px) scale(0.96);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+  .sheet-ov.open .sheet {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  
+  /* Today Page Adaptive Grid */
+  #page-today {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    column-gap: 20px;
+    row-gap: 0;
+    padding: 0 16px;
+  }
+  .dashboard-card {
+    grid-column: 1 / -1;
+    margin: 16px 0 12px 0;
+  }
+  #injectionTimingBanner {
+    grid-column: 1 / -1;
+    margin: 0 0 12px 0;
+  }
+  .logged-state-card {
+    grid-column: 1;
+    margin: 0 0 16px 0;
+  }
+  .log-form {
+    grid-column: 1;
+    padding: 0;
+  }
+  .today-cta {
+    grid-column: 1;
+    padding: 16px 0 24px;
+  }
+  .info-rows {
+    grid-column: 2;
+    grid-row: 3;
+    margin: 0;
+  }
+  .export-row {
+    grid-column: 2;
+    grid-row: 4;
+    padding: 12px 0 0 0;
+  }
+  
+  /* Calendar Page Adaptive Grid */
+  #page-calendar {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+    padding: 20px 16px 0;
+  }
+  .cal-header {
+    grid-column: 1 / -1;
+    margin-bottom: 12px;
+  }
+  .cal-grid {
+    grid-column: 1;
+    margin-bottom: 0;
+  }
+  .day-card {
+    grid-column: 2;
+    margin-bottom: 0;
+  }
+  .day-card-placeholder {
+    grid-column: 2;
+    display: flex !important;
+    background: var(--s1);
+    border-radius: var(--rc);
+    padding: 32px 18px;
+    text-align: center;
+    color: var(--l3);
+    font-weight: 600;
+    font-size: 14px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    border: 1.5px dashed var(--l4);
+  }
+  /* Hide placeholder if day card is open */
+  .day-card.open ~ .day-card-placeholder {
+    display: none !important;
+  }
+  
+  /* History/Log Page Grid */
+  #logList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    max-width: 960px;
+  }
+}
+
+/* ── PWA INSTALL BANNER STYLES ── */
+[data-theme="dark"] #pwaInstallBanner {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.toast.error {
+  background: var(--rd);
+  border-color: rgba(255, 59, 48, 0.22);
+  color: var(--red);
+}
 </style>
 </head>
 <body>
@@ -966,6 +1109,10 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     </div>
     <div class="dc-body" id="dcBody"></div>
     <div class="dc-actions" id="dcActions"></div>
+  </div>
+  <div class="day-card-placeholder" id="dayCardPlaceholder">
+    <span style="font-size: 24px;">📅</span>
+    <span>Select a day on the calendar to view details or log retroactively.</span>
   </div>
 </div>
 
@@ -1263,6 +1410,23 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
       <button class="sh-btn sh-btn-red" id="confirmYesBtn" style="flex:1; font-size: 13px; font-weight: 700; height: 38px;">Delete</button>
       <button class="sh-btn sh-btn-ghost" id="confirmNoBtn" style="flex:1; font-size: 13px; font-weight: 700; height: 38px; border: 1px solid var(--l4); background: var(--s2);">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" style="position:fixed; top: calc(var(--st) + 16px); left: 50%; transform: translateX(-50%) translateY(-120px); width: calc(100% - 32px); max-width: 358px; background: var(--ov); backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--rc); padding: 14px 16px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.08); display: none; flex-direction: column; gap: 10px; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; opacity: 0; pointer-events: none;">
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="font-size: 24px; flex-shrink: 0; padding-top: 2px;">📲</div>
+    <div style="flex: 1; min-width: 0;">
+      <h3 style="font-size: 14px; font-weight: 800; color: var(--l1); margin-bottom: 2px; letter-spacing: -0.2px;">Install FIP Journal</h3>
+      <p id="pwaInstallDesc" style="font-size: 12px; font-weight: 500; color: var(--l2); line-height: 1.4;">Add to your home screen for quick offline access and daily tracking.</p>
+    </div>
+    <button id="closePwaBanner" style="background: none; border: none; font-size: 16px; color: var(--l3); cursor: pointer; padding: 2px; line-height: 1;">✕</button>
+  </div>
+  <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <button class="sh-btn" id="btnPwaInstall" style="width: auto; padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: var(--rs); background: var(--blue); color: #ffffff; border: none; height: auto; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      Install App
+    </button>
   </div>
 </div>
 
@@ -2682,9 +2846,15 @@ document.getElementById('shareStatusBtn').addEventListener('click', () => {
 
 /* ── TOAST ── */
 let _tt;
-function toast(msg) {
+function toast(msg, isError = false) {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
+  el.textContent = msg;
+  if (isError) {
+    el.classList.add('error');
+  } else {
+    el.classList.remove('error');
+  }
+  el.classList.add('show');
   clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
@@ -2804,7 +2974,7 @@ document.getElementById('cloudSubmitBtn').addEventListener('click', () => {
   const password = document.getElementById('cloudPassword').value.trim();
   
   if (!email || !password) {
-    alert("Please enter both email and password!");
+    toast("Please enter both email and password!", true);
     return;
   }
   
@@ -2827,10 +2997,10 @@ document.getElementById('cloudSubmitBtn').addEventListener('click', () => {
               pullFromCloud(true);
             })
             .catch(err => {
-              alert("Sign-In failed: " + err.message);
+              toast("Sign-In failed: " + err.message, true);
             });
         } else {
-          alert("Linking failed: " + error.message);
+          toast("Linking failed: " + error.message, true);
         }
       });
   } else {
@@ -2842,7 +3012,7 @@ document.getElementById('cloudSubmitBtn').addEventListener('click', () => {
         pullFromCloud(true);
       })
       .catch(err => {
-        alert("Sign-In failed: " + err.message);
+        toast("Sign-In failed: " + err.message, true);
       });
   }
 });
@@ -2873,6 +3043,75 @@ setTimeout(() => {
   if (splash) splash.classList.add('fade-out');
 }, 1200);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ── PWA INSTALLATION PROMPT ── */
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  const dismissed = localStorage.getItem('fip_pwa_dismissed') === 'true';
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  
+  if (!dismissed && !isStandalone) {
+    showPwaBanner();
+  }
+});
+
+function showPwaBanner() {
+  const banner = document.getElementById('pwaInstallBanner');
+  if (!banner) return;
+  banner.style.display = 'flex';
+  setTimeout(() => {
+    banner.style.transform = 'translateX(-50%) translateY(0)';
+    banner.style.opacity = '1';
+    banner.style.pointerEvents = 'all';
+  }, 100);
+}
+
+function hidePwaBanner() {
+  const banner = document.getElementById('pwaInstallBanner');
+  if (!banner) return;
+  banner.style.transform = 'translateX(-50%) translateY(-120px)';
+  banner.style.opacity = '0';
+  banner.style.pointerEvents = 'none';
+}
+
+document.getElementById('closePwaBanner')?.addEventListener('click', () => {
+  hidePwaBanner();
+  localStorage.setItem('fip_pwa_dismissed', 'true');
+});
+
+document.getElementById('btnPwaInstall')?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    localStorage.setItem('fip_pwa_dismissed', 'true');
+  }
+  deferredPrompt = null;
+  hidePwaBanner();
+});
+
+// Detect iOS/Safari to show helper banner
+window.addEventListener('DOMContentLoaded', () => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const dismissed = localStorage.getItem('fip_pwa_dismissed') === 'true';
+  
+  if (isIOS && !isStandalone && !dismissed) {
+    const desc = document.getElementById('pwaInstallDesc');
+    const btn = document.getElementById('btnPwaInstall');
+    if (desc) {
+      desc.innerHTML = 'Tap the Share icon <svg style="display:inline-block; vertical-align:middle; width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none;" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> in Safari and select <strong>\'Add to Home Screen\'</strong>.';
+    }
+    if (btn) {
+      btn.style.display = 'none';
+    }
+    showPwaBanner();
+  }
+});
 </script>
 </body>
 </html>
