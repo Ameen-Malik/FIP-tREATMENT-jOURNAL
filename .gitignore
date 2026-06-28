@@ -1,0 +1,19 @@
+# AI Development & Workspace Instructions
+design.md
+changelog.md
+agents.md
+.agents/
+
+# System / OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor & IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local user/test data
+*.csv

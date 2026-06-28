@@ -14,6 +14,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDKs (compat mode for browser CDN script compatibility)
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+-->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
@@ -30,6 +35,7 @@ html{-webkit-text-size-adjust:100%}
   --font:"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --rc:16px;--rs:12px;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+  --toast-bg:rgba(52,199,89,0.08);--toast-color:#1c7430;--toast-border:rgba(52,199,89,0.22);
 }
 /* ── DARK ── */
 [data-theme="dark"]{
@@ -40,6 +46,7 @@ html{-webkit-text-size-adjust:100%}
   --blue:#0A84FF;--bd:rgba(10,132,255,0.15);
   --red:#FF453A;--rd:rgba(255,69,58,0.12);
   --orange:#FF9F0A;
+  --toast-bg:rgba(48,209,88,0.12);--toast-color:#30D158;--toast-border:rgba(48,209,88,0.28);
 }
 /* theme toggle button */
 .theme-btn{
@@ -242,49 +249,73 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
   transition: background 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
-.hold-to-confirm:active {
-  transform: scale(0.98);
-}
-.hold-progress {
+.hold-fill {
   position: absolute;
   left: 0;
   top: 0;
   height: 100%;
-  width: 0%;
+  width: 56px;
   background: var(--blue);
-  opacity: 0.15;
-  transition: width 0.1s linear;
+  border-radius: 28px;
+  transition: width 0.1s linear, background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.hold-content {
+.hold-text {
   position: relative;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--blue);
   pointer-events: none;
-  transition: color 0.4s, transform 0.2s;
+  transition: color 0.4s, opacity 0.3s;
   letter-spacing: -0.2px;
 }
+.hold-thumb {
+  position: absolute;
+  left: 3px;
+  width: 50px;
+  height: 50px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  z-index: 3;
+  color: var(--blue);
+  transition: left 0.1s linear, color 0.4s, background-color 0.4s;
+  pointer-events: none;
+}
+[data-theme="dark"] .hold-thumb {
+  background: #ffffff;
+  color: var(--blue);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
 .hold-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 16px;
+  font-weight: 800;
   transition: transform 0.2s;
 }
 
 /* Completed State */
 .hold-to-confirm.completed {
-  background: var(--green);
+  background: var(--gd);
   border-color: rgba(48, 209, 88, 0.2);
   box-shadow: 0 4px 14px var(--gd);
 }
-.hold-to-confirm.completed .hold-progress {
+.hold-to-confirm.completed .hold-fill {
   width: 100% !important;
-  opacity: 0;
+  background: var(--green);
 }
-.hold-to-confirm.completed .hold-content {
+.hold-to-confirm.completed .hold-thumb {
+  left: calc(100% - 53px) !important;
+  color: var(--green);
+}
+.hold-to-confirm.completed .hold-text {
   color: #ffffff;
+  opacity: 0.9;
 }
 
 /* Log Form Layout Re-style */
@@ -520,6 +551,17 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
   width:4px;height:4px;border-radius:50%;background:var(--blue);
 }
 .cd.done-c{background:var(--green);color:#ffffff;font-weight:700}
+.cd.sel-batch {
+  background: var(--blue) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.45) !important;
+  transform: scale(0.92);
+}
+.cd.disabled-batch {
+  opacity: 0.25 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
 .cd.done-c.today-c::after{background:#ffffff}
 .cd.missed-c{background:var(--rd);color:var(--red);font-weight:700}
 
@@ -625,17 +667,22 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 .sh-btn-blue{background:var(--blue);color:#fff}
 .sh-btn-ghost{background:var(--s2);color:var(--l2)}
 .sh-btn-red{background:var(--rd);color:var(--red)}
-.sh-sect{font-size:12px;font-weight:600;color:var(--l3);letter-spacing:.3px;padding:0 16px;margin:10px 0 4px}
+.sh-sect{font-size:11px;font-weight:700;color:var(--l3);letter-spacing:.5px;padding:0 16px;margin:18px 0 6px;text-transform:uppercase}
 .sh-note{font-size:12px;color:var(--l3);padding:0 16px;margin-bottom:8px;line-height:1.5}
 
 /* TOAST */
 .toast{
   position:fixed;top:calc(var(--st) + 62px);left:50%;
   transform:translateX(-50%) translateY(-10px);
-  background:rgba(50,50,54,.96);backdrop-filter:blur(20px);
-  color:var(--l1);padding:9px 18px;border-radius:28px;
-  font-size:13px;font-weight:500;white-space:nowrap;
+  background:var(--toast-bg);
+  border:1px solid var(--toast-border);
+  color:var(--toast-color);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  padding:9px 18px;border-radius:28px;
+  font-size:13px;font-weight:600;white-space:nowrap;
   z-index:999;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.08);
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -661,26 +708,44 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   color: var(--blue);
 }
 .splash-cat {
-  animation: pulse-cat 1.6s infinite ease-in-out;
+  animation: pulse-cat-subtle 2s infinite 2.2s ease-in-out;
+}
+.splash-cat path {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: draw-cat 1.8s forwards cubic-bezier(0.25, 1, 0.5, 1);
 }
 .splash-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.5px;
   color: var(--l1);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fade-up-title 1s forwards 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
-@keyframes pulse-cat {
+@keyframes draw-cat {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes fade-up-title {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pulse-cat-subtle {
   0%, 100% {
-    transform: scale(0.94);
-    opacity: 0.7;
+    transform: scale(1);
+    color: var(--blue);
   }
   50% {
-    transform: scale(1.04);
-    opacity: 1;
+    transform: scale(1.03);
     color: var(--green);
   }
 }
@@ -690,25 +755,12 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 <!-- Splash Screen -->
 <div id="splash-screen">
   <div class="splash-content">
-    <svg class="splash-cat" viewBox="0 0 512 512" width="120" height="120" fill="none">
-      <defs>
-        <filter id="splashGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="6" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
-      <rect x="12" y="12" width="488" height="488" rx="108" stroke="#0A84FF" stroke-width="12" fill="none"/>
-      <g transform="translate(0, 5)">
-        <path d="M195 160 L210 90 L245 145 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
-        <path d="M317 160 L302 90 L267 145 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="256" cy="180" r="55" stroke="#FFFFFF" stroke-width="12" fill="none"/>
-        <path d="M222 178 C226 186, 238 186, 242 178" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
-        <path d="M270 178 C274 186, 286 186, 290 178" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
-        <path d="M251 196 L256 201 L261 196" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M190 230 C160 300, 170 410, 256 410 C342 410, 352 300, 322 230 Z" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round" fill="none"/>
-        <path d="M322 360 C380 360, 390 280, 360 250 C345 235, 335 250, 345 260 C355 270, 350 320, 320 320" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
-        <path d="M256 315 C256 315, 226 280, 226 260 C226 242, 238 232, 256 232 C274 232, 286 242, 286 260 C286 280, 256 315, 256 315 Z" fill="#30D158" filter="url(#splashGlow)"/>
-      </g>
+    <svg class="splash-cat" viewBox="0 0 100 100" width="90" height="90" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 45 C20 70, 80 70, 80 45 C80 30, 70 15, 70 15 L58 32 C54 30, 46 30, 42 32 L30 15 C30 15, 20 30, 20 45 Z" />
+      <path d="M35 48 C35 48, 38 45, 41 48" stroke-width="3" />
+      <path d="M59 48 C59 48, 62 45, 65 48" stroke-width="3" />
+      <path d="M47 54 L50 56 L53 54" stroke-width="2.5" />
+      <path d="M44 59 C47 62, 50 61, 50 61 C50 61, 53 62, 56 59" stroke-width="2.5" />
     </svg>
     <div class="splash-title">FIP Journal</div>
   </div>
@@ -734,7 +786,7 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     <div class="db-header">
       <div class="db-title-wrap">
         <span class="db-cat-name" id="heroName">Treatment day</span>
-        <h1 class="db-day-title" id="heroStatus">Day 1</h1>
+        <h1 class="db-day-title" id="heroStatus" style="display: flex; align-items: center; gap: 8px; font-size: 26px;">Day 1 <button id="shareStatusBtn" style="background: none; border: none; font-size: 18px; cursor: pointer; padding: 2px; line-height: 1;" title="Share milestone card">🏆</button></h1>
       </div>
       <div class="db-badge">84 DAYS TOTAL</div>
     </div>
@@ -764,6 +816,11 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     </div>
   </div>
 
+  <div id="injectionTimingBanner" style="margin: 0 16px 14px; padding:10px 14px; background:var(--bd); border:1px solid var(--l4); border-radius:var(--rs); font-size:12px; font-weight:600; color:var(--blue); display:none; align-items:center; gap:8px; line-height: 1.4;">
+    <span style="font-size: 14px;">⏰</span>
+    <span id="injectionTimingText">Next injection due at 20:00 (2h remaining)</span>
+  </div>
+
   <!-- Logged State Card (shown when complete) -->
   <div class="logged-state-card" id="loggedStateCard" style="display: none;">
     <div class="success-checkmark">
@@ -774,6 +831,12 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     </div>
     <h2 class="logged-title">Today's Entry Logged! 🎉</h2>
     <p class="logged-streak-msg" id="loggedStreakMsg">One step closer to recovery! 🐾</p>
+    <div class="logged-summary" id="loggedSummary" style="margin: 14px 0 18px; padding: 14px 18px; background: var(--s2); border-radius: var(--rs); width: 100%; border: 1px solid var(--l4); display: flex; flex-direction: column; gap: 8px; text-align: left; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);">
+      <div style="font-size: 11px; font-weight: 700; color: var(--l3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--l4); padding-bottom: 6px; margin-bottom: 4px;">Logged Details</div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--l2);">🌡️ Temperature: <span id="lsTemp" style="color: var(--l1); float: right;">—</span></div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--l2);">⚖️ Weight: <span id="lsWeight" style="color: var(--l1); float: right;">—</span></div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--l2);">💉 Calculated Dose: <span id="lsDose" style="color: var(--l1); float: right;">—</span></div>
+    </div>
     <p class="logged-guidance">Head over to the Log or Calendar tab to view the readings.</p>
   </div>
 
@@ -782,14 +845,18 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     <div class="lf-title">Today's details</div>
 
     <div class="field-group">
-      <div class="fg-row">
+      <label class="fg-row" for="iTemp" style="border-bottom: 1px solid var(--l4);">
         <span class="fg-lbl">Temperature</span>
         <input class="fg-inp" id="iTemp" type="number" step="0.1" placeholder="38.5°C"/>
-      </div>
-      <div class="fg-row">
+      </label>
+      <label class="fg-row" for="iWeight" style="border-bottom: 1px solid var(--l4);">
         <span class="fg-lbl">Weight</span>
         <input class="fg-inp" id="iWeight" type="number" step="0.1" placeholder="kg"/>
-      </div>
+      </label>
+      <label class="fg-row" for="iTime">
+        <span class="fg-lbl">Time of Injection</span>
+        <input class="fg-inp" id="iTime" type="time" style="color:var(--l1); font-weight:600; background:none; border:none; outline:none; text-align:right;" value="20:00"/>
+      </label>
     </div>
 
     <div class="field-group">
@@ -802,14 +869,14 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     </div>
 
     <div class="field-group">
-      <div class="fg-row">
+      <label class="fg-row" for="iDoseKg">
         <span class="fg-lbl">Dose (mg/kg)</span>
         <input class="fg-inp" id="iDoseKg" type="number" step="0.1" placeholder="auto"/>
-      </div>
-      <div class="fg-row">
+      </label>
+      <label class="fg-row" for="iActual">
         <span class="fg-lbl">Actual dose</span>
         <input class="fg-inp" id="iActual" type="number" step="0.01" placeholder="ml"/>
-      </div>
+      </label>
     </div>
 
     <div class="ta-wrap">
@@ -821,10 +888,14 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
   <div class="today-cta">
     <div class="cta-date" id="ctaDate">—</div>
     <div class="hold-to-confirm" id="holdContainer">
-      <div class="hold-progress" id="holdProgress"></div>
-      <div class="hold-content">
-        <span class="hold-icon" id="holdIcon">🔘</span>
-        <span class="hold-text" id="holdText">Press & Hold to Log Injection</span>
+      <div class="hold-fill" id="holdFill"></div>
+      <div class="hold-text" id="holdText">Press & Hold to Log Injection</div>
+      <div class="hold-thumb" id="holdThumb">
+        <span class="hold-icon" id="holdIcon">
+          <svg class="hold-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </span>
       </div>
     </div>
   </div>
@@ -865,7 +936,10 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 <!-- CALENDAR -->
 <div class="page" id="page-calendar">
   <div class="cal-header">
-    <div class="cal-month" id="calMonth">—</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="cal-month" id="calMonth">—</div>
+      <button class="exp-btn" id="calBatchBtn" style="padding: 4px 10px; font-size: 11px; height: 26px; border-radius: 13px; font-weight: 700; width: auto; border: 1px solid var(--l4); background: var(--s2); cursor:pointer;">Batch Log</button>
+    </div>
     <div class="cal-navs">
       <button class="cal-nav" id="calPrev">‹</button>
       <button class="cal-nav" id="calNext">›</button>
@@ -956,7 +1030,7 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     </div>
     <div class="sh-sect">CAT'S WEIGHT (kg)</div>
     <div class="sh-group">
-      <div class="sh-row"><span class="sh-lbl">Base weight</span><input class="sh-inp" id="protoWeight" type="number" step="0.1" placeholder="e.g. 4.2"/></div>
+      <label class="sh-row" for="protoWeight"><span class="sh-lbl">Base weight</span><input class="sh-inp" id="protoWeight" type="number" step="0.1" placeholder="e.g. 4.2"/></label>
     </div>
     <div class="sh-note">Actual dose (ml) = weight × mg/kg ÷ concentration. Auto-calculated daily.</div>
     <div class="sh-footer">
@@ -972,8 +1046,9 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
     <div class="sheet-title" id="editTitle">Log Entry</div>
     <div class="sheet-sub" id="editSub">—</div>
     <div class="sh-group">
-      <div class="sh-row"><span class="sh-lbl">Temperature</span><input class="sh-inp" id="eTemp" type="number" step="0.1" placeholder="°C"/></div>
-      <div class="sh-row"><span class="sh-lbl">Weight</span><input class="sh-inp" id="eWeight" type="number" step="0.1" placeholder="kg"/></div>
+      <label class="sh-row" for="eTemp" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Temperature</span><input class="sh-inp" id="eTemp" type="number" step="0.1" placeholder="°C"/></label>
+      <label class="sh-row" for="eWeight" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Weight</span><input class="sh-inp" id="eWeight" type="number" step="0.1" placeholder="kg"/></label>
+      <label class="sh-row" for="eTime"><span class="sh-lbl">Time of Injection</span><input class="sh-inp" id="eTime" type="time" style="color:var(--l1); font-weight:600;"/></label>
     </div>
     <div class="sh-sect">VIAL CONCENTRATION</div>
     <div class="sh-group">
@@ -984,8 +1059,8 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
       </div>
     </div>
     <div class="sh-group">
-      <div class="sh-row"><span class="sh-lbl">Dose (mg/kg)</span><input class="sh-inp" id="eDoseKg" type="number" step="0.1" placeholder="auto"/></div>
-      <div class="sh-row"><span class="sh-lbl">Actual dose</span><input class="sh-inp" id="eActual" type="number" step="0.01" placeholder="ml"/></div>
+      <label class="sh-row" for="eDoseKg"><span class="sh-lbl">Dose (mg/kg)</span><input class="sh-inp" id="eDoseKg" type="number" step="0.1" placeholder="auto"/></label>
+      <label class="sh-row" for="eActual"><span class="sh-lbl">Actual dose</span><input class="sh-inp" id="eActual" type="number" step="0.01" placeholder="ml"/></label>
     </div>
     <textarea class="sh-ta" id="eNote" placeholder="Notes…"></textarea>
     <div class="sh-footer">
@@ -996,36 +1071,282 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
   </div>
 </div>
 
+<!-- SHEET: Cat Switcher -->
+<div class="sheet-ov" id="catSwitcherSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">My Cats</div>
+    <div class="sheet-sub">Manage and switch between different cats.</div>
+    
+    <div class="sh-sect">ACTIVE PROFILES</div>
+    <div class="field-group" id="switcherCatList" style="padding: 0; background: none; border: none; box-shadow: none; display: flex; flex-direction: column; gap: 8px; width: 100%;">
+      <!-- Cat rows go here -->
+    </div>
+    
+    <div class="sh-footer" style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px;">
+      <button class="sh-btn sh-btn-blue" id="switcherAddBtn" style="width:100%">+ Add New Cat</button>
+      <button class="sh-btn sh-btn-ghost" id="cloudSyncBtn" style="width:100%; display:none;">☁️ Link Account to Cloud</button>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('catSwitcherSheet')" style="width:100%">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Onboarding / Add Cat -->
+<div class="sheet-ov" id="onboardingSheet">
+  <div class="sheet" style="max-height: 90vh; overflow-y: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="onboardTitle">Welcome to FIP Journal 🐾</div>
+    <div class="sheet-sub" id="onboardSub">Let's set up your cat's recovery profile.</div>
+    
+    <div class="sh-sect">CAT'S NAME</div>
+    <div class="sh-group">
+      <label class="sh-row" for="obName">
+        <span class="sh-lbl">Name</span>
+        <input class="sh-inp" id="obName" type="text" placeholder="e.g. Luna"/>
+      </label>
+    </div>
+    
+    <div class="sh-sect">FIP TYPE</div>
+    <div class="sh-type-pills" id="obTypePills">
+      <button class="sh-type-pill" data-v="dry"><span>Dry FIP</span><span class="sh-dose">6 mg/kg</span></button>
+      <button class="sh-type-pill" data-v="wet"><span>Wet FIP</span><span class="sh-dose">8 mg/kg</span></button>
+      <button class="sh-type-pill" data-v="neuro"><span>Neurological</span><span class="sh-dose">10 mg/kg</span></button>
+    </div>
+    
+    <div class="sh-sect">DEFAULT VIAL CONCENTRATION</div>
+    <div class="sh-group">
+      <div class="sh-pills" id="obConcPills">
+        <button class="sh-pill" data-v="20">20 mg/ml</button>
+        <button class="sh-pill sel" data-v="30">30 mg/ml</button>
+        <button class="sh-pill" data-v="40">40 mg/ml</button>
+      </div>
+    </div>
+    
+    <div class="sh-sect">CAT'S WEIGHT (kg)</div>
+    <div class="sh-group">
+      <label class="sh-row" for="obWeight">
+        <span class="sh-lbl">Base Weight</span>
+        <input class="sh-inp" id="obWeight" type="number" step="0.1" placeholder="e.g. 3.2"/>
+      </label>
+    </div>
+
+    <div class="sh-sect">DAILY INJECTION SCHEDULE</div>
+    <div class="sh-group">
+      <label class="sh-row" for="obTime">
+        <span class="sh-lbl">Target Time</span>
+        <input class="sh-inp" id="obTime" type="time" style="color:var(--l1); font-weight:600; background:none; border:none; outline:none; text-align:right;" value="20:00"/>
+      </label>
+    </div>
+    
+    <div class="sh-sect" id="obStageSect">TREATMENT STAGE</div>
+    <div id="obStageGroup" style="display:flex; flex-direction:column; gap:8px; width:100%; padding:0 16px;">
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--l1); cursor:pointer;">
+        <input type="radio" name="obStage" value="today" checked style="accent-color: var(--blue);">
+        <span>Starting treatment today (Day 1)</span>
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--l1); cursor:pointer;">
+        <input type="radio" name="obStage" value="past" style="accent-color: var(--blue);">
+        <span>Already in treatment (Mid-treatment)</span>
+      </label>
+    </div>
+    
+    <div class="sh-sect" id="obDateSect" style="display:none">TREATMENT START DATE</div>
+    <div class="sh-group" id="obDateGroup" style="display:none; flex-direction:column;">
+      <div class="sh-row" id="obStartDateRow" style="cursor:pointer; width:100%; display:flex; justify-content:space-between; align-items:center;">
+        <span class="sh-lbl">Start Date</span>
+        <span class="sh-val" id="obStartDateText" style="font-weight: 600; color: var(--blue);">23 Jun 2026</span>
+        <input type="hidden" id="obStartDate" value="2026-06-23"/>
+      </div>
+      <div id="obCalendarWrapper" style="display:none; width:100%; padding:14px 16px; border-top:1px solid var(--l4); background:var(--s1); transition:all 0.2s ease;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <button type="button" id="obCalPrev" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer; font-size:14px; font-family:var(--font);">‹ Prev</button>
+          <span id="obCalMonth" style="font-weight:700; font-size:14px; color:var(--l1); font-family:var(--font);">June 2026</span>
+          <button type="button" id="obCalNext" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer; font-size:14px; font-family:var(--font);">Next ›</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center; font-size:11px; color:var(--l3); font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+          <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+        </div>
+        <div id="obCalDays" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;"></div>
+      </div>
+    </div>
+    
+    <div class="sh-footer" style="margin-top:20px; width:100%">
+      <button class="sh-btn sh-btn-blue" id="obSaveBtn" style="width:100%">Create Recovery Profile</button>
+      <button class="sh-btn sh-btn-ghost" id="obCancelBtn" style="width:100%; display:none;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Banner: Batch Log Selection -->
+<div id="batchLogBanner" style="position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 358px; background: rgba(0, 122, 255, 0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 12px 18px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2); z-index: 998; color: #ffffff; transition: bottom 0.3s ease;">
+  <div style="font-size: 13px; font-weight: 700;"><span id="batchCount">0</span> days selected</div>
+  <div style="display: flex; gap: 8px;">
+    <button class="sh-btn" id="batchConfirmBtn" style="background: #ffffff; color: var(--blue); padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; height: auto; font-weight: 700; cursor: pointer;">Next</button>
+    <button class="sh-btn" id="batchCancelBtn" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; height: auto; font-weight: 700; cursor: pointer;">Cancel</button>
+  </div>
+</div>
+
+<!-- SHEET: Batch Log Details -->
+<div class="sheet-ov" id="batchLogSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Batch Log Injections</div>
+    <div class="sheet-sub">Apply values to all selected days.</div>
+    
+    <div class="sh-sect">DAILY DETAILS (OPTIONAL)</div>
+    <div class="sh-group">
+      <label class="sh-row" for="bTemp" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Temperature</span><input class="sh-inp" id="bTemp" type="number" step="0.1" placeholder="°C (optional)"/></label>
+      <label class="sh-row" for="bWeight" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Weight</span><input class="sh-inp" id="bWeight" type="number" step="0.1" placeholder="kg (optional)"/></label>
+      <label class="sh-row" for="bTime"><span class="sh-lbl">Default Time</span><input class="sh-inp" id="bTime" type="time" style="color:var(--l1); font-weight:600;" value="20:00"/></label>
+    </div>
+    
+    <div class="sh-sect">VIAL CONCENTRATION & DOSAGE</div>
+    <div class="sh-group">
+      <label class="sh-row" for="bDoseKg" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Dose (mg/kg)</span><input class="sh-inp" id="bDoseKg" type="number" step="0.1" placeholder="auto"/></label>
+      <label class="sh-row" for="bActual"><span class="sh-lbl">Actual dose</span><input class="sh-inp" id="bActual" type="number" step="0.01" placeholder="ml (optional)"/></label>
+    </div>
+    
+    <textarea class="sh-ta" id="bNote" placeholder="Notes (optional, e.g. Backfilled logs)"></textarea>
+    
+    <div class="sh-footer" style="margin-top: 20px; width: 100%;">
+      <button class="sh-btn sh-btn-blue" id="batchSaveSubmitBtn" style="width: 100%">Log Selected Days</button>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('batchLogSheet')" style="width: 100%">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Cloud Sync / Link Account -->
+<div class="sheet-ov" id="cloudLinkSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Cloud Account Sync ☁️</div>
+    <div class="sheet-sub">Link your account to sync data across all your devices and prevent data loss.</div>
+    
+    <div class="sh-sect">EMAIL & PASSWORD</div>
+    <div class="sh-group">
+      <div class="sh-row" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Email</span><input class="sh-inp" id="cloudEmail" type="email" placeholder="email@example.com" style="text-align: right;"/></div>
+      <div class="sh-row"><span class="sh-lbl">Password</span><input class="sh-inp" id="cloudPassword" type="password" placeholder="••••••••" style="text-align: right;"/></div>
+    </div>
+    
+    <div class="sh-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <button class="sh-btn sh-btn-blue" id="cloudSubmitBtn" style="width: 100%">Link Account / Login</button>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('cloudLinkSheet')" style="width: 100%">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Share Recovery Card -->
+<div class="sheet-ov" id="shareCardSheet">
+  <div class="sheet" style="max-height: 90vh; overflow-y: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Share Recovery Milestone 🏆</div>
+    <div class="sheet-sub">Save or share this recovery card with your vet or on social support groups.</div>
+    
+    <div style="display: flex; justify-content: center; margin: 16px 0;">
+      <canvas id="shareCanvas" width="600" height="400" style="width: 100%; max-width: 320px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid var(--l4);"></canvas>
+    </div>
+    
+    <div class="sh-footer" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <a class="sh-btn sh-btn-blue" id="downloadShareBtn" style="text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;" download="fip-milestone.png">Download Image</a>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('shareCardSheet')" style="width: 100%">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Custom Confirm Dialogue -->
+<div class="sheet-ov" id="confirmSheet" style="z-index: 1001;">
+  <div class="sheet" style="padding: 20px 20px 24px; text-align: center; max-width: 340px; margin: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="confirmTitle" style="color:var(--red); font-size: 18px; margin-bottom: 6px;">Confirm Action</div>
+    <div class="sheet-sub" id="confirmMessage" style="margin-bottom:20px; line-height:1.5; font-size: 13px; font-weight: 500; color: var(--l2);">Are you sure?</div>
+    <div class="sh-footer" style="display:flex; gap:12px; width:100%; padding:0;">
+      <button class="sh-btn sh-btn-red" id="confirmYesBtn" style="flex:1; font-size: 13px; font-weight: 700; height: 38px;">Delete</button>
+      <button class="sh-btn sh-btn-ghost" id="confirmNoBtn" style="flex:1; font-size: 13px; font-weight: 700; height: 38px; border: 1px solid var(--l4); background: var(--s2);">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ── CONSTANTS ── */
-// Day 1 = June 23 2026 local midnight
-const START = new Date(2026,5,23,0,0,0,0);
 const TOTAL = 84;
-const K = {name:'fip_n',logs:'fip_l3',proto:'fip_p2'};
+const K_MULTI = { activeId: 'fip_active_cat_id', cats: 'fip_cats', logs: 'fip_logs' };
 const MO = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MOsh = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 /* ── STATE ── */
-let S = { name:'', logs:{}, proto:{type:'',conc:30,weight:''} };
+let S_data = {
+  activeCatId: '',
+  cats: {},
+  logs: {}
+};
+
+let S = {
+  get name() {
+    const cat = S_data.cats[S_data.activeCatId];
+    return cat ? cat.name : '';
+  },
+  set name(val) {
+    const cat = S_data.cats[S_data.activeCatId];
+    if (cat) cat.name = val;
+  },
+  get proto() {
+    const cat = S_data.cats[S_data.activeCatId];
+    return cat ? {
+      type: cat.type || '',
+      conc: parseInt(cat.conc) || 30,
+      weight: cat.weight || ''
+    } : { type: '', conc: 30, weight: '' };
+  },
+  set proto(val) {
+    const cat = S_data.cats[S_data.activeCatId];
+    if (cat) {
+      cat.type = val.type;
+      cat.conc = parseInt(val.conc);
+      cat.weight = val.weight;
+    }
+  },
+  get logs() {
+    if (!S_data.activeCatId) return {};
+    if (!S_data.logs[S_data.activeCatId]) S_data.logs[S_data.activeCatId] = {};
+    return S_data.logs[S_data.activeCatId];
+  },
+  set logs(val) {
+    if (S_data.activeCatId) {
+      S_data.logs[S_data.activeCatId] = val;
+    }
+  }
+};
+
 let calView = new Date(2026,5,1);
 let activePage = 'today';
 let editKey = null;
+let batchMode = false;
+let selectedBatchDays = new Set();
 
 /* ── UTILS ── */
 const pad = n => String(n).padStart(2,'0');
 const dkey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const todayKey = () => dkey(new Date());
 
+function getActiveStart() {
+  const cat = S_data.cats[S_data.activeCatId];
+  if (cat && cat.startDate) {
+    const [y, m, d] = cat.startDate.split('-').map(Number);
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+  return new Date(2026, 5, 23, 0, 0, 0, 0);
+}
+
 function dayNDate(n) {
-  const d = new Date(START);
+  const d = new Date(getActiveStart());
   d.setDate(d.getDate() + (n - 1));
   return d;
 }
 function treatDay(date) {
-  const a = new Date(START); a.setHours(0,0,0,0);
+  const a = new Date(getActiveStart()); a.setHours(0,0,0,0);
   const b = new Date(date);  b.setHours(0,0,0,0);
   return Math.round((b - a) / 86400000) + 1;
 }
@@ -1040,14 +1361,48 @@ function calcMl(w,dkg,c) {
 
 /* ── PERSISTENCE ── */
 function load() {
-  S.name = localStorage.getItem(K.name)||'';
-  try { S.logs  = JSON.parse(localStorage.getItem(K.logs))||{}; } catch{ S.logs={}; }
-  try { S.proto = {...S.proto,...JSON.parse(localStorage.getItem(K.proto))}; } catch{}
+  S_data.activeCatId = localStorage.getItem(K_MULTI.activeId) || '';
+  try { S_data.cats = JSON.parse(localStorage.getItem(K_MULTI.cats)) || {}; } catch { S_data.cats = {}; }
+  try { S_data.logs = JSON.parse(localStorage.getItem(K_MULTI.logs)) || {}; } catch { S_data.logs = {}; }
+
+  // Backward compatibility migration
+  const oldName = localStorage.getItem('fip_n');
+  const oldLogs = localStorage.getItem('fip_l3');
+  const oldProto = localStorage.getItem('fip_p2');
+
+  if (oldName || oldLogs || oldProto) {
+    const catId = 'cat_' + Date.now();
+    let name = oldName || 'My Cat';
+    let proto = { type: '', conc: 30, weight: '' };
+    let logs = {};
+    
+    try { if (oldProto) proto = { ...proto, ...JSON.parse(oldProto) }; } catch {}
+    try { if (oldLogs) logs = JSON.parse(oldLogs) || {}; } catch {}
+    
+    S_data.cats[catId] = {
+      id: catId,
+      name: name,
+      type: proto.type || '',
+      conc: parseInt(proto.conc) || 30,
+      weight: proto.weight || '',
+      startDate: '2026-06-23'
+    };
+    S_data.logs[catId] = logs;
+    S_data.activeCatId = catId;
+    
+    save();
+    
+    localStorage.removeItem('fip_n');
+    localStorage.removeItem('fip_l3');
+    localStorage.removeItem('fip_p2');
+  }
 }
 function save() {
-  localStorage.setItem(K.name, S.name);
-  localStorage.setItem(K.logs, JSON.stringify(S.logs));
-  localStorage.setItem(K.proto, JSON.stringify(S.proto));
+  localStorage.setItem(K_MULTI.activeId, S_data.activeCatId);
+  localStorage.setItem(K_MULTI.cats, JSON.stringify(S_data.cats));
+  localStorage.setItem(K_MULTI.logs, JSON.stringify(S_data.logs));
+  
+  if (typeof syncToCloud === 'function') syncToCloud();
 }
 
 /* ── STATS ── */
@@ -1070,24 +1425,40 @@ function updateHoldButtonState(done) {
   const container = document.getElementById('holdContainer');
   const icon = document.getElementById('holdIcon');
   const text = document.getElementById('holdText');
-  const progress = document.getElementById('holdProgress');
+  const fill = document.getElementById('holdFill');
+  const thumb = document.getElementById('holdThumb');
 
-  progress.style.width = done ? '100%' : '0%';
-  
   if (done) {
     container.classList.add('completed');
-    icon.textContent = '✓';
+    fill.style.transition = 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    thumb.style.transition = 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    fill.style.width = '100%';
+    thumb.style.left = 'calc(100% - 53px)';
+    icon.innerHTML = `
+      <svg class="hold-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    `;
     text.textContent = 'Logged ✓ — Tap to Undo';
   } else {
     container.classList.remove('completed');
-    icon.textContent = '🔘';
+    fill.style.transition = 'width 0.3s ease-out';
+    thumb.style.transition = 'left 0.3s ease-out';
+    fill.style.width = '56px';
+    thumb.style.left = '3px';
+    icon.innerHTML = `
+      <svg class="hold-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    `;
     text.textContent = 'Press & Hold to Log Injection';
   }
 }
 
 function initHoldToConfirm() {
   const container = document.getElementById('holdContainer');
-  const progress = document.getElementById('holdProgress');
+  const fill = document.getElementById('holdFill');
+  const thumb = document.getElementById('holdThumb');
   
   let isHolding = false;
   let holdStart = 0;
@@ -1099,12 +1470,21 @@ function initHoldToConfirm() {
     isHolding = true;
     holdStart = Date.now();
     
-    progress.style.transition = 'width 0.1s linear';
+    fill.style.transition = 'none';
+    thumb.style.transition = 'none';
     
+    const trackWidth = container.clientWidth;
+    const maxSlide = trackWidth - 56; 
+
     holdInterval = setInterval(() => {
       const elapsed = Date.now() - holdStart;
       const pct = Math.min(100, (elapsed / holdDuration) * 100);
-      progress.style.width = pct + '%';
+      
+      const currentFillWidth = 56 + (pct / 100) * maxSlide;
+      const currentThumbLeft = 3 + (pct / 100) * maxSlide;
+
+      fill.style.width = currentFillWidth + 'px';
+      thumb.style.left = currentThumbLeft + 'px';
       
       const scale = 1 - (elapsed / holdDuration) * 0.03;
       container.style.transform = `scale(${scale})`;
@@ -1115,7 +1495,7 @@ function initHoldToConfirm() {
         container.style.transform = '';
         markToday();
       }
-    }, 50);
+    }, 16); 
 
     e.preventDefault();
   };
@@ -1126,8 +1506,11 @@ function initHoldToConfirm() {
     clearInterval(holdInterval);
     
     container.style.transform = '';
-    progress.style.transition = 'width 0.3s ease-out';
-    progress.style.width = '0%';
+    
+    fill.style.transition = 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+    thumb.style.transition = 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+    fill.style.width = '56px';
+    thumb.style.left = '3px';
   };
 
   container.addEventListener('mousedown', startHold);
@@ -1143,6 +1526,44 @@ function initHoldToConfirm() {
       undoToday();
     }
   });
+}
+
+function getNextInjectionTarget() {
+  if (!S_data.activeCatId) return new Date();
+  
+  // 1. Check yesterday's log
+  const yesterday = new Date(Date.now() - 86400000);
+  const yKey = dkey(yesterday);
+  const yLog = S.logs[yKey];
+  if (yLog && yLog.ts) {
+    return new Date(yLog.ts + 86400000);
+  }
+  
+  // 2. Look for the earliest logged day to extract default hour/minute
+  let earliestTs = null;
+  for (let k in S.logs) {
+    if (S.logs[k].done && S.logs[k].ts) {
+      if (!earliestTs || S.logs[k].ts < earliestTs) {
+        earliestTs = S.logs[k].ts;
+      }
+    }
+  }
+  
+  const targetDate = new Date();
+  if (earliestTs) {
+    const earliestDate = new Date(earliestTs);
+    targetDate.setHours(earliestDate.getHours(), earliestDate.getMinutes(), 0, 0);
+  } else {
+    // Fallback to active cat profile's typicalTime
+    const cat = S_data.cats[S_data.activeCatId];
+    if (cat && cat.typicalTime) {
+      const [hh, mm] = cat.typicalTime.split(':').map(Number);
+      targetDate.setHours(hh, mm, 0, 0);
+    } else {
+      targetDate.setHours(20, 0, 0, 0);
+    }
+  }
+  return targetDate;
 }
 
 /* ── RENDER TODAY ── */
@@ -1179,26 +1600,74 @@ function renderToday() {
   const done = !!log.done;
   updateHoldButtonState(done);
 
+  // Timing notification banner
+  const banner = document.getElementById('injectionTimingBanner');
+  const targetTime = getNextInjectionTarget();
+  const hrsVal = targetTime.getHours().toString().padStart(2, '0');
+  const minsVal = targetTime.getMinutes().toString().padStart(2, '0');
+  const targetTimeStr = `${hrsVal}:${minsVal}`;
+
   const logForm = document.getElementById('logForm');
   const loggedCard = document.getElementById('loggedStateCard');
+  
   if (done) {
     logForm.style.display = 'none';
     loggedCard.style.display = 'flex';
     
     const catName = S.name || 'your cat';
     document.getElementById('loggedStreakMsg').textContent = `One step closer to saving ${catName}! 🐾`;
+    
+    // Populate summary of logged details
+    document.getElementById('lsTemp').textContent = log.temp ? `${log.temp}°C` : '—';
+    document.getElementById('lsWeight').textContent = log.weight ? `${log.weight} kg` : '—';
+    const doseVal = log.actual ? `${log.actual} ml` : (log.doseKg ? `${log.doseKg} mg/kg` : '—');
+    document.getElementById('lsDose').textContent = doseVal;
+    
+    // Logged banner state
+    if (log.ts) {
+      const loggedDate = new Date(log.ts);
+      const lHrs = loggedDate.getHours().toString().padStart(2, '0');
+      const lMins = loggedDate.getMinutes().toString().padStart(2, '0');
+      document.getElementById('injectionTimingText').textContent = `Today's injection completed at ${lHrs}:${lMins} ✓`;
+    } else {
+      document.getElementById('injectionTimingText').textContent = `Today's injection completed ✓`;
+    }
+    banner.style.background = 'var(--gd)';
+    banner.style.color = 'var(--green)';
+    banner.style.borderColor = 'rgba(48, 209, 88, 0.25)';
+    banner.style.display = 'flex';
   } else {
     logForm.style.display = 'block';
     loggedCard.style.display = 'none';
     
     // Unlock form inputs
-    const inputs = ['iTemp', 'iWeight', 'iDoseKg', 'iActual', 'iNote'];
+    const inputs = ['iTemp', 'iWeight', 'iDoseKg', 'iActual', 'iNote', 'iTime'];
     inputs.forEach(id => {
       document.getElementById(id).disabled = false;
     });
     document.querySelectorAll('#concPills .pill').forEach(p => {
       p.disabled = false;
     });
+    
+    // Active timing calculation
+    const diffMs = targetTime - Date.now();
+    if (diffMs > 0) {
+      const diffHrs = Math.floor(diffMs / 3600000);
+      const diffMins = Math.floor((diffMs % 3600000) / 60000);
+      document.getElementById('injectionTimingText').textContent = `Next injection due at ${targetTimeStr} (${diffHrs}h ${diffMins}m remaining)`;
+      banner.style.background = 'var(--bd)';
+      banner.style.color = 'var(--blue)';
+      banner.style.borderColor = 'rgba(0, 122, 255, 0.15)';
+    } else {
+      const overdueMs = Math.abs(diffMs);
+      const diffHrs = Math.floor(overdueMs / 3600000);
+      const diffMins = Math.floor((overdueMs % 3600000) / 60000);
+      document.getElementById('injectionTimingText').textContent = `Injection overdue! Was due at ${targetTimeStr} (${diffHrs}h ${diffMins}m overdue) ⚠️`;
+      banner.style.background = 'var(--rd)';
+      banner.style.color = 'var(--red)';
+      banner.style.borderColor = 'rgba(255, 59, 48, 0.2)';
+    }
+    banner.style.display = 'flex';
   }
 
   // Restore form values
@@ -1207,6 +1676,14 @@ function renderToday() {
   document.getElementById('iDoseKg').value = log.doseKg||protoDoseKg()||'';
   document.getElementById('iActual').value = log.actual||'';
   document.getElementById('iNote').value   = log.note||'';
+  
+  if (log.ts) {
+    const tObj = new Date(log.ts);
+    document.getElementById('iTime').value = `${tObj.getHours().toString().padStart(2, '0')}:${tObj.getMinutes().toString().padStart(2, '0')}`;
+  } else {
+    document.getElementById('iTime').value = `${hrsVal}:${minsVal}`;
+  }
+  
   setPills('#concPills', log.conc||S.proto.conc||30);
 }
 
@@ -1221,6 +1698,14 @@ function setShPills(sel, val) {
 function renderCalendar() {
   const y = calView.getFullYear(), m = calView.getMonth();
   document.getElementById('calMonth').textContent = `${MO[m]} ${y}`;
+  
+  const batchBtn = document.getElementById('calBatchBtn');
+  if (batchBtn) {
+    batchBtn.style.background = batchMode ? 'var(--blue)' : 'var(--s2)';
+    batchBtn.style.color = batchMode ? '#ffffff' : 'var(--l2)';
+    batchBtn.style.borderColor = batchMode ? 'rgba(0,122,255,0.2)' : 'var(--l4)';
+    batchBtn.textContent = batchMode ? 'Selecting...' : 'Batch Log';
+  }
 
   const firstDow = new Date(y, m, 1).getDay();   // 0=Sun
   const daysInMonth = new Date(y, m+1, 0).getDate();
@@ -1242,10 +1727,25 @@ function renderCalendar() {
     const log = S.logs[k];
 
     let cls = 'cd';
-    if (inRange && log?.done)             cls += ' done-c';
-    else if (inRange && isPast && !isToday) cls += ' missed-c';
-    else if (!inRange || (!isPast && !isToday)) cls += ' future';
-    if (isToday) cls += ' today-c';
+    
+    if (batchMode) {
+      const isValidBatchDay = td >= 1 && date <= nowMid;
+      if (!isValidBatchDay) {
+        cls += ' disabled-batch';
+      } else if (selectedBatchDays.has(k)) {
+        cls += ' sel-batch';
+      } else {
+        if (inRange && log?.done)             cls += ' done-c';
+        else if (inRange && isPast && !isToday) cls += ' missed-c';
+        else if (!inRange || (!isPast && !isToday)) cls += ' future';
+        if (isToday) cls += ' today-c';
+      }
+    } else {
+      if (inRange && log?.done)             cls += ' done-c';
+      else if (inRange && isPast && !isToday) cls += ' missed-c';
+      else if (!inRange || (!isPast && !isToday)) cls += ' future';
+      if (isToday) cls += ' today-c';
+    }
 
     html += `<button class="${cls}" data-k="${k}" data-td="${td}">${d}</button>`;
   }
@@ -1253,7 +1753,20 @@ function renderCalendar() {
   document.getElementById('calDays').innerHTML = html;
 
   document.querySelectorAll('#calDays .cd:not(.empty)').forEach(el => {
-    el.addEventListener('click', () => showDayCard(el));
+    el.addEventListener('click', () => {
+      const k = el.dataset.k;
+      if (batchMode) {
+        if (selectedBatchDays.has(k)) {
+          selectedBatchDays.delete(k);
+        } else {
+          selectedBatchDays.add(k);
+        }
+        document.getElementById('batchCount').textContent = selectedBatchDays.size;
+        renderCalendar();
+      } else {
+        showDayCard(el);
+      }
+    });
   });
 
   document.getElementById('dayCard').classList.remove('open');
@@ -1351,8 +1864,23 @@ function readForm() {
 
 function markToday() {
   const tk = todayKey();
-  S.logs[tk] = { ...readForm(), done:true, ts:Date.now() };
+  const timeVal = document.getElementById('iTime').value || '20:00';
+  const [hh, mm] = timeVal.split(':').map(Number);
+  const logDate = new Date();
+  logDate.setHours(hh, mm, 0, 0);
+  
+  S.logs[tk] = { ...readForm(), done:true, ts:logDate.getTime() };
   save(); renderAll(); toast('Injection logged ✓');
+  
+  const st = stats();
+  const todayDayNum = st.done;
+  const milestones = [7, 14, 21, 30, 42, 50, 60, 70, 80, 84];
+  if (milestones.includes(todayDayNum)) {
+    setTimeout(() => {
+      generateMilestoneCard(todayDayNum);
+      openSheet('shareCardSheet');
+    }, 1000);
+  }
 }
 function undoToday() {
   const tk = todayKey();
@@ -1413,6 +1941,19 @@ window.openEdit = function(k) {
   document.getElementById('eDoseKg').value = log.doseKg||protoDoseKg()||'';
   document.getElementById('eActual').value = log.actual||'';
   document.getElementById('eNote').value   = log.note||'';
+  
+  if (log.ts) {
+    const lDate = new Date(log.ts);
+    const thrs = lDate.getHours().toString().padStart(2, '0');
+    const tmins = lDate.getMinutes().toString().padStart(2, '0');
+    document.getElementById('eTime').value = `${thrs}:${tmins}`;
+  } else {
+    const nextTarget = getNextInjectionTarget();
+    const thrs = nextTarget.getHours().toString().padStart(2, '0');
+    const tmins = nextTarget.getMinutes().toString().padStart(2, '0');
+    document.getElementById('eTime').value = `${thrs}:${tmins}`;
+  }
+  
   setShPills('#editConc', log.conc||S.proto.conc||30);
   document.getElementById('editDelBtn').style.display = log.done ? '' : 'none';
 
@@ -1442,10 +1983,16 @@ document.querySelectorAll('#editConc .sh-pill').forEach(p => p.addEventListener(
 document.getElementById('editSaveBtn').addEventListener('click', () => {
   if (!editKey) return;
   const cEl = document.querySelector('#editConc .sh-pill.sel');
+  
+  const timeVal = document.getElementById('eTime').value || '20:00';
+  const [hh, mm] = timeVal.split(':').map(Number);
+  const [y, mo, d] = editKey.split('-').map(Number);
+  const logDateObj = new Date(y, mo - 1, d, hh, mm, 0, 0);
+  
   S.logs[editKey] = {
     ...(S.logs[editKey]||{}),
     done:   true,
-    ts:     S.logs[editKey]?.ts || Date.now(),
+    ts:     logDateObj.getTime(),
     temp:   document.getElementById('eTemp').value.trim(),
     weight: document.getElementById('eWeight').value.trim(),
     conc:   cEl ? cEl.dataset.v : S.proto.conc,
@@ -1480,25 +2027,418 @@ document.querySelectorAll('#protoConc .sh-pill').forEach(p => p.addEventListener
 document.getElementById('saveProtoBtn').addEventListener('click', () => {
   const tEl = document.querySelector('#typePills .sh-type-pill.sel');
   const cEl = document.querySelector('#protoConc .sh-pill.sel');
-  S.proto.type   = tEl ? tEl.dataset.v : '';
-  S.proto.conc   = cEl ? cEl.dataset.v : 30;
-  S.proto.weight = document.getElementById('protoWeight').value.trim();
+  const type = tEl ? tEl.dataset.v : 'dry';
+  const conc = cEl ? parseInt(cEl.dataset.v) : 30;
+  const weight = document.getElementById('protoWeight').value.trim();
+  
+  S.proto.type   = type;
+  S.proto.conc   = conc;
+  S.proto.weight = weight;
+  
+  // Propagate to today's active log in S_data if it isn't completed yet
+  const tk = todayKey();
+  if (S_data.activeCatId) {
+    if (!S_data.logs[S_data.activeCatId]) S_data.logs[S_data.activeCatId] = {};
+    const log = S_data.logs[S_data.activeCatId][tk] || { done: false };
+    if (!log.done) {
+      const doseKg = type === 'dry' ? 6 : type === 'wet' ? 8 : type === 'neuro' ? 10 : 6;
+      log.weight = weight;
+      log.conc = conc;
+      log.doseKg = doseKg;
+      log.actual = calcMl(weight, doseKg, conc);
+      S_data.logs[S_data.activeCatId][tk] = log;
+    }
+  }
+  
   save(); closeSheet('protoSheet'); renderToday(); toast('Protocol saved');
 });
 
 /* ── CAT NAME ── */
+/* ── CAT MULTI-PROFILES & ONBOARDING CONTROLLERS ── */
 document.getElementById('catBtn').addEventListener('click', () => {
-  document.getElementById('nameInp').value = S.name;
-  openSheet('nameSheet');
-  setTimeout(() => document.getElementById('nameInp').focus(), 340);
+  renderSwitcherCatList();
+  openSheet('catSwitcherSheet');
 });
-document.getElementById('saveNameBtn').addEventListener('click', () => {
-  const n = document.getElementById('nameInp').value.trim();
-  if (n) { S.name = n; save(); renderToday(); toast(`Tracking ${n}'s recovery 🐱`); }
-  closeSheet('nameSheet');
+
+let editingCatId = null;
+
+function editCatProfile(catId) {
+  editingCatId = catId;
+  const cat = S_data.cats[catId];
+  if (!cat) return;
+  
+  closeSheet('catSwitcherSheet');
+  
+  // Pre-fill form fields
+  document.getElementById('obName').value = cat.name;
+  document.getElementById('obWeight').value = cat.weight || '';
+  document.getElementById('obTime').value = cat.typicalTime || '20:00';
+  
+  document.querySelectorAll('#obConcPills .sh-pill').forEach(x => {
+    x.classList.toggle('sel', x.dataset.v === String(cat.conc || 30));
+  });
+  
+  document.querySelectorAll('#obTypePills .sh-type-pill').forEach(x => {
+    x.classList.toggle('sel', x.dataset.v === cat.type);
+  });
+  
+  // Show Start Date selector and hide stage option
+  document.getElementById('obStageSect').style.display = 'none';
+  document.getElementById('obStageGroup').style.display = 'none';
+  document.getElementById('obDateSect').style.display = 'block';
+  document.getElementById('obDateGroup').style.display = 'flex';
+  document.getElementById('obStartDate').value = cat.startDate || '';
+  
+  const [sy, smo, sd] = (cat.startDate || '').split('-').map(Number);
+  if (sy && smo && sd) {
+    document.getElementById('obStartDateText').textContent = fmtFull(new Date(sy, smo-1, sd));
+  } else {
+    document.getElementById('obStartDateText').textContent = 'Select Date';
+  }
+  
+  document.getElementById('onboardTitle').textContent = "Edit Cat Profile 🐾";
+  document.getElementById('onboardSub').textContent = "Modify recovery details for " + cat.name;
+  document.getElementById('obSaveBtn').textContent = "Save Changes";
+  document.getElementById('obCancelBtn').style.display = 'block';
+  
+  openSheet('onboardingSheet');
+}
+
+// Reusable Custom Confirm controller
+let currentConfirmCallback = null;
+function showConfirm(title, msg, onYes) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = msg;
+  currentConfirmCallback = onYes;
+  openSheet('confirmSheet');
+}
+document.getElementById('confirmYesBtn').addEventListener('click', () => {
+  if (currentConfirmCallback) currentConfirmCallback();
+  closeSheet('confirmSheet');
 });
-document.getElementById('nameInp').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('saveNameBtn').click();
+document.getElementById('confirmNoBtn').addEventListener('click', () => {
+  closeSheet('confirmSheet');
+});
+
+// Delete helper
+function deleteCatProfile(catId) {
+  if (Object.keys(S_data.cats).length <= 1) {
+    toast("You must keep at least one cat profile!");
+    return;
+  }
+  showConfirm(
+    "Delete Profile 🐾",
+    `Are you sure you want to delete ${S_data.cats[catId].name}'s entire profile and logs? This cannot be undone.`,
+    () => {
+      delete S_data.cats[catId];
+      if (S_data.logs[catId]) delete S_data.logs[catId];
+      if (S_data.activeCatId === catId) {
+        S_data.activeCatId = Object.keys(S_data.cats)[0];
+      }
+      save();
+      renderSwitcherCatList();
+      renderAll();
+      toast("Profile deleted 🐾");
+    }
+  );
+}
+
+// Render cat list in switcher
+function renderSwitcherCatList() {
+  const container = document.getElementById('switcherCatList');
+  container.innerHTML = '';
+  
+  Object.values(S_data.cats).forEach(cat => {
+    const isCurrent = cat.id === S_data.activeCatId;
+    const item = document.createElement('div');
+    item.className = 'ir';
+    item.style.padding = '12px 16px';
+    item.style.borderRadius = 'var(--rs)';
+    item.style.border = isCurrent ? '1.5px solid var(--blue)' : '1px solid var(--l4)';
+    item.style.background = isCurrent ? 'rgba(0, 122, 255, 0.05)' : 'var(--s1)';
+    item.style.display = 'flex';
+    item.style.alignItems = 'center';
+    item.style.justifyContent = 'space-between';
+    item.style.cursor = 'pointer';
+    item.style.margin = '4px 0';
+    
+    item.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">🐱</span>
+        <div style="display:flex;flex-direction:column">
+          <span style="font-weight:700;color:var(--l1);font-size:14px">${cat.name}</span>
+          <span style="font-size:11px;color:var(--l2)">FIP Start: ${cat.startDate}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${isCurrent ? '<span style="color:var(--blue);font-size:12px;font-weight:700;margin-right:4px;">Active</span>' : ''}
+        <button class="sh-btn" style="padding:4px 8px;font-size:11px;border-radius:6px;height:auto;border:1px solid var(--l4);background:var(--s2);color:var(--blue);cursor:pointer;" onclick="event.stopPropagation(); editCatProfile('${cat.id}')">Edit</button>
+        <button class="sh-btn" style="padding:4px 8px;font-size:11px;border-radius:6px;height:auto;border:1px solid var(--l4);background:var(--s2);color:var(--red);cursor:pointer;" onclick="event.stopPropagation(); deleteCatProfile('${cat.id}')">Delete</button>
+      </div>
+    `;
+    
+    item.addEventListener('click', () => {
+      S_data.activeCatId = cat.id;
+      save();
+      closeSheet('catSwitcherSheet');
+      renderAll();
+      toast(`Switched to ${cat.name} 🐱`);
+    });
+    container.appendChild(item);
+  });
+}
+
+// Add new cat from switcher
+document.getElementById('switcherAddBtn').addEventListener('click', () => {
+  editingCatId = null;
+  closeSheet('catSwitcherSheet');
+  
+  // Reset onboarding form inputs
+  document.getElementById('obName').value = '';
+  document.getElementById('obWeight').value = '';
+  document.getElementById('obTime').value = '20:00';
+  
+  document.querySelectorAll('#obConcPills .sh-pill').forEach(x => {
+    x.classList.toggle('sel', x.dataset.v === '30');
+  });
+  
+  document.querySelectorAll('#obTypePills .sh-type-pill').forEach(x => {
+    x.classList.toggle('sel', x.dataset.v === 'dry');
+  });
+  
+  // Show Stage buttons and hide start date
+  document.getElementById('obStageSect').style.display = 'block';
+  document.getElementById('obStageGroup').style.display = 'flex';
+  document.getElementById('obDateSect').style.display = 'none';
+  document.getElementById('obDateGroup').style.display = 'none';
+  document.querySelector('input[name="obStage"][value="today"]').click();
+  
+  const localDate = new Date();
+  const y = localDate.getFullYear();
+  const m = String(localDate.getMonth() + 1).padStart(2, '0');
+  const d = String(localDate.getDate()).padStart(2, '0');
+  const todayISO = `${y}-${m}-${d}`;
+  document.getElementById('obStartDate').value = todayISO;
+  document.getElementById('obStartDateText').textContent = fmtFull(localDate);
+  
+  // Show cancel button if we already have an active profile
+  document.getElementById('obCancelBtn').style.display = S_data.activeCatId ? 'block' : 'none';
+  document.getElementById('onboardTitle').textContent = "Add New Cat 🐾";
+  document.getElementById('onboardSub').textContent = "Enter details to create another recovery profile.";
+  document.getElementById('obSaveBtn').textContent = "Create Recovery Profile";
+  
+  openSheet('onboardingSheet');
+});
+
+// Onboarding stage toggle (radio listener)
+document.querySelectorAll('input[name="obStage"]').forEach(el => {
+  el.addEventListener('change', () => {
+    const isPast = el.value === 'past';
+    document.getElementById('obDateSect').style.display = isPast ? 'block' : 'none';
+    document.getElementById('obDateGroup').style.display = isPast ? 'flex' : 'none';
+  });
+});
+
+// FIP Type pills inside onboarding
+document.querySelectorAll('#obTypePills .sh-type-pill').forEach(p => p.addEventListener('click', () => {
+  document.querySelectorAll('#obTypePills .sh-type-pill').forEach(x => x.classList.remove('sel'));
+  p.classList.add('sel');
+}));
+
+// Onboarding Concentration pills
+document.querySelectorAll('#obConcPills .sh-pill').forEach(p => p.addEventListener('click', () => {
+  document.querySelectorAll('#obConcPills .sh-pill').forEach(x => x.classList.remove('sel'));
+  p.classList.add('sel');
+}));
+
+// Inline Calendar Picker for Onboarding Start Date
+let obCalView = new Date();
+function renderObCalendar() {
+  const y = obCalView.getFullYear(), m = obCalView.getMonth();
+  document.getElementById('obCalMonth').textContent = `${MO[m]} ${y}`;
+  
+  const firstDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  
+  let html = '';
+  for (let i=0; i<firstDow; i++) html += `<div style="height:28px;"></div>`;
+  
+  const currentSelStr = document.getElementById('obStartDate').value;
+  
+  for (let d=1; d<=daysInMonth; d++) {
+    const dateObj = new Date(y, m, d);
+    const k = dkey(dateObj);
+    const isSel = k === currentSelStr;
+    
+    const btnStyle = isSel 
+      ? `background:var(--blue); color:#ffffff; font-weight:700; border-radius:50%;` 
+      : `color:var(--l1);`;
+      
+    html += `<button type="button" class="ob-cal-day" data-k="${k}" style="height:28px; width:28px; border:none; background:none; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin:auto; ${btnStyle}">${d}</button>`;
+  }
+  
+  document.getElementById('obCalDays').innerHTML = html;
+  
+  document.querySelectorAll('.ob-cal-day').forEach(el => {
+    el.addEventListener('click', () => {
+      const k = el.dataset.k;
+      document.getElementById('obStartDate').value = k;
+      
+      const [yVal, moVal, dVal] = k.split('-').map(Number);
+      document.getElementById('obStartDateText').textContent = fmtFull(new Date(yVal, moVal-1, dVal));
+      
+      document.getElementById('obCalendarWrapper').style.display = 'none';
+      renderObCalendar();
+    });
+  });
+}
+
+document.getElementById('obStartDateRow').addEventListener('click', () => {
+  const wrapper = document.getElementById('obCalendarWrapper');
+  const isHidden = wrapper.style.display === 'none';
+  wrapper.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    const curVal = document.getElementById('obStartDate').value;
+    if (curVal) {
+      const [y, mo, d] = curVal.split('-').map(Number);
+      obCalView = new Date(y, mo-1, 1);
+    }
+    renderObCalendar();
+  }
+});
+
+document.getElementById('obCalPrev').addEventListener('click', (e) => {
+  e.stopPropagation();
+  obCalView.setMonth(obCalView.getMonth() - 1);
+  renderObCalendar();
+});
+
+document.getElementById('obCalNext').addEventListener('click', (e) => {
+  e.stopPropagation();
+  obCalView.setMonth(obCalView.getMonth() + 1);
+  renderObCalendar();
+});
+
+// Save onboarding / Add cat profile
+document.getElementById('obSaveBtn').addEventListener('click', () => {
+  const name = document.getElementById('obName').value.trim();
+  const typePill = document.querySelector('#obTypePills .sh-type-pill.sel');
+  const type = typePill ? typePill.dataset.v : 'dry';
+  const concPill = document.querySelector('#obConcPills .sh-pill.sel');
+  const conc = concPill ? parseInt(concPill.dataset.v) : 30;
+  const weight = parseFloat(document.getElementById('obWeight').value) || 1.0;
+  const typicalTimeVal = document.getElementById('obTime').value || '20:00';
+  
+  if (!name) {
+    toast("Please enter your cat's name! 🐾");
+    return;
+  }
+  
+  const localDateObj = new Date();
+  const ly = localDateObj.getFullYear();
+  const lm = String(localDateObj.getMonth() + 1).padStart(2, '0');
+  const ld = String(localDateObj.getDate()).padStart(2, '0');
+  let startDateVal = `${ly}-${lm}-${ld}`;
+  if (editingCatId) {
+    // In edit mode, start date is directly visible
+    startDateVal = document.getElementById('obStartDate').value;
+    const cat = S_data.cats[editingCatId];
+    if (cat) {
+      cat.name = name;
+      cat.type = type;
+      cat.conc = conc;
+      cat.weight = weight;
+      cat.startDate = startDateVal;
+      cat.typicalTime = typicalTimeVal;
+      
+      // Propagate changes to today's log if not completed
+      if (editingCatId === S_data.activeCatId) {
+        const tk = todayKey();
+        if (!S_data.logs[editingCatId]) S_data.logs[editingCatId] = {};
+        const log = S_data.logs[editingCatId][tk] || { done: false };
+        if (!log.done) {
+          const doseKg = type === 'dry' ? 6 : type === 'wet' ? 8 : type === 'neuro' ? 10 : 6;
+          log.weight = weight;
+          log.conc = conc;
+          log.doseKg = doseKg;
+          log.actual = calcMl(weight, doseKg, conc);
+          S_data.logs[editingCatId][tk] = log;
+        }
+      }
+      
+      save();
+      editingCatId = null;
+      closeSheet('onboardingSheet');
+      renderAll();
+      toast(`Saved changes for ${name} 🐱`);
+    }
+    return;
+  }
+  
+  const isPast = document.querySelector('input[name="obStage"]:checked').value === 'past';
+  if (isPast) {
+    startDateVal = document.getElementById('obStartDate').value;
+  }
+  
+  const catId = 'cat_' + Date.now();
+  
+  // Build logs with auto-backfill if needed
+  const startDateObj = new Date(startDateVal);
+  startDateObj.setHours(0,0,0,0);
+  const todayDateObj = new Date();
+  todayDateObj.setHours(0,0,0,0);
+  
+  const diffTime = todayDateObj - startDateObj;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  const catLogs = {};
+  const dose = type === 'dry' ? 6 : type === 'wet' ? 8 : 10;
+  
+  if (diffDays > 0) {
+    // User is mid-treatment: auto-populate logs *before* today with defaults
+    const [tH, tM] = typicalTimeVal.split(':').map(Number);
+    for (let i = 0; i < diffDays; i++) {
+      const d = new Date(startDateObj);
+      d.setDate(d.getDate() + i);
+      d.setHours(tH, tM, 0, 0);
+      const k = dkey(d);
+      catLogs[k] = {
+        done: true,
+        ts: d.getTime(),
+        doseKg: dose,
+        actual: '',
+        conc: conc,
+        temp: '',
+        weight: weight,
+        note: 'Auto-backfilled during setup'
+      };
+    }
+  } else {
+    // Starting fresh today: do not pre-complete any logs so the user can log Day 1 themselves!
+  }
+  
+  S_data.cats[catId] = {
+    id: catId,
+    name: name,
+    type: type,
+    conc: conc,
+    weight: weight,
+    startDate: startDateVal,
+    typicalTime: typicalTimeVal
+  };
+  S_data.logs[catId] = catLogs;
+  S_data.activeCatId = catId;
+  
+  save();
+  closeSheet('onboardingSheet');
+  renderAll();
+  toast(`Welcome, ${name}! Recovery profile created.`);
+});
+
+// Onboarding Cancel button
+document.getElementById('obCancelBtn').addEventListener('click', () => {
+  editingCatId = null;
+  closeSheet('onboardingSheet');
 });
 
 /* ── EXPORT ── */
@@ -1530,9 +2470,15 @@ function dl(blob, name) {
 
 /* ── SHEETS ── */
 function openSheet(id)  { document.getElementById(id).classList.add('open'); }
-function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
-['nameSheet','protoSheet','editSheet'].forEach(id => {
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'batchLogSheet' && batchMode) {
+    document.getElementById('batchLogBanner').style.display = 'flex';
+  }
+}
+['nameSheet','protoSheet','editSheet','catSwitcherSheet','onboardingSheet','cloudLinkSheet','shareCardSheet','batchLogSheet','confirmSheet'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => {
+    if (id === 'onboardingSheet' && !S_data.activeCatId) return;
     if (e.target === document.getElementById(id)) closeSheet(id);
   });
 });
@@ -1553,6 +2499,186 @@ document.querySelectorAll('.tb').forEach(btn => {
 /* ── CAL NAV ── */
 document.getElementById('calPrev').addEventListener('click', () => { calView.setMonth(calView.getMonth()-1); renderCalendar(); });
 document.getElementById('calNext').addEventListener('click', () => { calView.setMonth(calView.getMonth()+1); renderCalendar(); });
+
+/* ── BATCH LOGGING LISTENERS ── */
+document.getElementById('calBatchBtn').addEventListener('click', () => {
+  batchMode = !batchMode;
+  if (!batchMode) {
+    selectedBatchDays.clear();
+    document.getElementById('batchLogBanner').style.display = 'none';
+  } else {
+    selectedBatchDays.clear();
+    document.getElementById('batchCount').textContent = '0';
+    document.getElementById('batchLogBanner').style.display = 'flex';
+    toast("Select days on calendar to log 📅");
+  }
+  renderCalendar();
+});
+
+document.getElementById('batchConfirmBtn').addEventListener('click', () => {
+  if (selectedBatchDays.size === 0) {
+    toast("Please select at least one day first! 📅");
+    return;
+  }
+  // Hide selection banner while inputs modal is active
+  document.getElementById('batchLogBanner').style.display = 'none';
+  
+  // Pre-fill batch form with protocol defaults
+  document.getElementById('bTemp').value = '';
+  document.getElementById('bWeight').value = S.proto.weight || '';
+  document.getElementById('bDoseKg').value = protoDoseKg() || '';
+  document.getElementById('bActual').value = '';
+  document.getElementById('bNote').value = 'Batch backfilled logs';
+  
+  openSheet('batchLogSheet');
+});
+
+document.getElementById('batchCancelBtn').addEventListener('click', () => {
+  batchMode = false;
+  selectedBatchDays.clear();
+  document.getElementById('batchLogBanner').style.display = 'none';
+  renderCalendar();
+});
+
+document.getElementById('batchSaveSubmitBtn').addEventListener('click', () => {
+  const tempVal = document.getElementById('bTemp').value.trim();
+  const weightVal = document.getElementById('bWeight').value.trim();
+  const doseKgVal = document.getElementById('bDoseKg').value.trim() || protoDoseKg() || '';
+  const actualVal = document.getElementById('bActual').value.trim();
+  const noteVal = document.getElementById('bNote').value.trim();
+  const timeVal = document.getElementById('bTime').value || '20:00';
+  const [hh, mm] = timeVal.split(':').map(Number);
+  
+  const conc = S.proto.conc || 30;
+  
+  selectedBatchDays.forEach(k => {
+    const [y, mo, d] = k.split('-').map(Number);
+    const logDate = new Date(y, mo - 1, d, hh, mm);
+    
+    S.logs[k] = {
+      done: true,
+      ts: logDate.getTime(),
+      doseKg: doseKgVal,
+      actual: actualVal,
+      conc: conc,
+      temp: tempVal,
+      weight: weightVal,
+      note: noteVal
+    };
+  });
+  
+  save();
+  
+  // Exit batch selection state
+  batchMode = false;
+  selectedBatchDays.clear();
+  document.getElementById('batchLogBanner').style.display = 'none';
+  
+  closeSheet('batchLogSheet');
+  renderAll();
+  toast("Batch entries logged successfully!");
+});
+
+/* ── MILESTONE SHARE CARD EXPORTER ── */
+function generateMilestoneCard(dayNum) {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  // 1. Draw Mesh/Linear Gradient Background
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, '#007AFF');
+  grad.addColorStop(0.5, '#5856D6');
+  grad.addColorStop(1, '#30D158');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // 2. Draw Glass card border/fill overlay
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.lineWidth = 1.5;
+  const margin = 20;
+  
+  ctx.beginPath();
+  const x = margin, y = margin, w = canvas.width - margin*2, h = canvas.height - margin*2, r = 16;
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  
+  // 3. Draw Text
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  // Title (Cat name + recovery)
+  ctx.font = '800 20px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`${(S.name || 'My Cat').toUpperCase()}'S RECOVERY`, canvas.width / 2, 80);
+  
+  // Badge box
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.beginPath();
+  const bx = canvas.width/2 - 90, by = 115, bw = 180, bh = 42, br = 21;
+  ctx.moveTo(bx+br, by);
+  ctx.arcTo(bx+bw, by, bx+bw, by+bh, br);
+  ctx.arcTo(bx+bw, by+bh, bx, by+bh, br);
+  ctx.arcTo(bx, by+bh, bx, by, br);
+  ctx.arcTo(bx, by, bx+bw, by, br);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Day Badge Text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`DAY ${dayNum} OF 84`, canvas.width / 2, 136);
+  
+  // Subtitle/gamified praise
+  let praise = "One step closer to recovery! 🐾";
+  if (dayNum >= 84) praise = "FIP GRADUATE! 🎉 Beaten FIP!";
+  else if (dayNum >= 80) praise = "Graduation in Sight! 🎓";
+  else if (dayNum >= 60) praise = "Two-Thirds Complete! 🌟";
+  else if (dayNum >= 42) praise = "Halfway Completed! 💫";
+  else if (dayNum >= 30) praise = "One Month Strong! 💪";
+  else if (dayNum >= 14) praise = "Two Weeks Completed! ✨";
+  else if (dayNum >= 7) praise = "First Week Done! 🏆";
+  
+  ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(praise, canvas.width / 2, 205);
+  
+  // Details
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+  const fipType = S.proto.type === 'dry' ? 'Dry FIP' : S.proto.type === 'wet' ? 'Wet FIP' : 'Neurological FIP';
+  ctx.fillText(`Type: ${fipType} | Target: ${protoDoseKg()} mg/kg`, canvas.width / 2, 250);
+  
+  // Date timestamp
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`Recorded on ${fmtFull(new Date())}`, canvas.width / 2, 280);
+  
+  // Watermark
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText("FIP TREATMENT JOURNAL", canvas.width / 2, 345);
+  
+  // 4. Update download link url
+  const downloadBtn = document.getElementById('downloadShareBtn');
+  if (downloadBtn) {
+    downloadBtn.href = canvas.toDataURL("image/png");
+    downloadBtn.download = `${S.name || 'cat'}-day${dayNum}-milestone.png`;
+  }
+}
+
+// Share status trophy button listener
+document.getElementById('shareStatusBtn').addEventListener('click', () => {
+  const st = stats();
+  generateMilestoneCard(st.done);
+  openSheet('shareCardSheet');
+});
 
 /* ── TOAST ── */
 let _tt;
@@ -1591,26 +2717,157 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
   }
 });
 
+/* ── FIREBASE SYNC INTEGRATION ── */
+let db = null;
+let auth = null;
+let currentUser = null;
+let syncEnabled = false;
+
+const firebaseConfig = {
+  apiKey: localStorage.getItem('fip_firebase_api_key') || "AIzaSyFakeKeyPlaceholderForDefaultRunOnly",
+  authDomain: "fip-treatment-journal.firebaseapp.com",
+  projectId: "fip-treatment-journal",
+  storageBucket: "fip-treatment-journal.appspot.com",
+  messagingSenderId: "367290123512",
+  appId: "1:367290123512:web:a62b80f12c8bdfa37ef81c"
+};
+
+function initFirebase() {
+  console.log("Firebase sync deactivated for local-first execution. Supabase integration is scheduled for the next run.");
+  syncEnabled = false;
+}
+
+function syncToCloud() {
+  const localTs = Date.now();
+  localStorage.setItem('fip_local_updated_at', localTs);
+  
+  if (!syncEnabled || !currentUser) return;
+  
+  db.collection("users").doc(currentUser.uid).collection("data").doc("journal").set({
+    cats: S_data.cats,
+    logs: S_data.logs,
+    activeCatId: S_data.activeCatId,
+    updatedAt: localTs
+  }).catch(err => {
+    console.warn("Firestore save failed:", err);
+  });
+}
+
+function pullFromCloud(force = false) {
+  if (!syncEnabled || !currentUser) return;
+  
+  db.collection("users").doc(currentUser.uid).collection("data").doc("journal").get()
+    .then((docSnap) => {
+      if (docSnap.exists) {
+        const cloudData = docSnap.data();
+        const localTs = parseInt(localStorage.getItem('fip_local_updated_at')) || 0;
+        const cloudTs = cloudData.updatedAt || 0;
+        
+        if (cloudTs > localTs || force) {
+          S_data.cats = cloudData.cats || {};
+          S_data.logs = cloudData.logs || {};
+          S_data.activeCatId = cloudData.activeCatId || '';
+          
+          localStorage.setItem(K_MULTI.activeId, S_data.activeCatId);
+          localStorage.setItem(K_MULTI.cats, JSON.stringify(S_data.cats));
+          localStorage.setItem(K_MULTI.logs, JSON.stringify(S_data.logs));
+          localStorage.setItem('fip_local_updated_at', cloudTs);
+          
+          renderAll();
+          toast("Synced with Cloud ☁️");
+        } else if (localTs > cloudTs) {
+          syncToCloud();
+        }
+      } else {
+        syncToCloud();
+      }
+    })
+    .catch((err) => {
+      console.warn("Firestore fetch failed:", err);
+    });
+}
+
+// Link/Sign-In Event Listener
+document.getElementById('cloudSyncBtn').addEventListener('click', () => {
+  closeSheet('catSwitcherSheet');
+  if (currentUser && !currentUser.isAnonymous) {
+    document.getElementById('cloudEmail').value = currentUser.email;
+  } else {
+    document.getElementById('cloudEmail').value = '';
+  }
+  document.getElementById('cloudPassword').value = '';
+  openSheet('cloudLinkSheet');
+});
+
+document.getElementById('cloudSubmitBtn').addEventListener('click', () => {
+  const email = document.getElementById('cloudEmail').value.trim();
+  const password = document.getElementById('cloudPassword').value.trim();
+  
+  if (!email || !password) {
+    alert("Please enter both email and password!");
+    return;
+  }
+  
+  if (currentUser && currentUser.isAnonymous) {
+    const credential = firebase.auth.EmailAuthProvider.credential(email, password);
+    currentUser.linkWithCredential(credential)
+      .then((linkResult) => {
+        currentUser = linkResult.user;
+        toast("Account linked successfully ☁️");
+        closeSheet('cloudLinkSheet');
+        syncToCloud();
+      })
+      .catch((error) => {
+        if (error.code === 'auth/email-already-in-use') {
+          auth.signInWithEmailAndPassword(email, password)
+            .then((cred) => {
+              currentUser = cred.user;
+              toast("Logged in successfully ☁️");
+              closeSheet('cloudLinkSheet');
+              pullFromCloud(true);
+            })
+            .catch(err => {
+              alert("Sign-In failed: " + err.message);
+            });
+        } else {
+          alert("Linking failed: " + error.message);
+        }
+      });
+  } else {
+    auth.signInWithEmailAndPassword(email, password)
+      .then((cred) => {
+        currentUser = cred.user;
+        toast("Logged in successfully ☁️");
+        closeSheet('cloudLinkSheet');
+        pullFromCloud(true);
+      })
+      .catch(err => {
+        alert("Sign-In failed: " + err.message);
+      });
+  }
+});
+
 /* ── BOOT ── */
+initFirebase();
 load();
 initHoldToConfirm();
 
-// Seed days 1-3 as done if not already set
-(function seed() {
-  [[2026,5,23,'First dose'],[2026,5,24,''],[2026,5,25,'']].forEach(([y,m,d,note]) => {
-    const k = dkey(new Date(y,m,d));
-    if (!S.logs[k]) {
-      S.logs[k] = {
-        done:true, ts:new Date(y,m,d,20,20).getTime(),
-        doseKg: protoDoseKg()||'', actual:'',
-        conc: S.proto.conc||30, temp:'', weight:'', note
-      };
-    }
-  });
-  save();
-})();
+// Boot initialization complete
+
+function checkOnboarding() {
+  if (!S_data.activeCatId || Object.keys(S_data.cats).length === 0) {
+    document.getElementById('obCancelBtn').style.display = 'none';
+    document.getElementById('onboardTitle').textContent = "Welcome to FIP Journal 🐾";
+    document.getElementById('onboardSub').textContent = "Let's set up your cat's recovery profile.";
+    setTimeout(() => {
+      document.querySelector('#obTypePills [data-v="dry"]').click();
+      openSheet('onboardingSheet');
+    }, 1500);
+  }
+}
 
 renderAll();
+checkOnboarding();
 setTimeout(() => {
   const splash = document.getElementById('splash-screen');
   if (splash) splash.classList.add('fade-out');
