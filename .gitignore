@@ -3,6 +3,11 @@ design.md
 changelog.md
 agents.md
 .agents/
+.claude/
+skills-lock.json
+SESSION_LOG.md
+CLAUDE.md
+.mcp.json
 
 # System / OS files
 .DS_Store
@@ -17,3 +22,11 @@ desktop.ini
 
 # Local user/test data
 *.csv
+
+# Node / Vite
+node_modules/
+dist/
+
+# Environment / secrets
+.env
+.env.local
