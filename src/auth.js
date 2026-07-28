@@ -36,12 +36,7 @@ function renderAuthState() {
     // stuck loop when re-entering an email on the "same" old component.
     if (mountedSignIn) { clerk.unmountSignIn(signInEl); mountedSignIn = false; }
     if (!mountedUserButton) {
-      // afterSignOutUrl: without it, sign-out defaults to "/" — the landing
-      // page now, not the app — an extra, unnecessary hop through a page with
-      // no Clerk awareness at all. Staying on /app.html means renderAuthState
-      // just flips back to the sign-in screen in place, same as every other
-      // signed-out state transition.
-      clerk.mountUserButton(userButtonEl, { afterSignOutUrl: '/app.html' });
+      clerk.mountUserButton(userButtonEl);
       mountedUserButton = true;
     }
   } else {
@@ -76,7 +71,11 @@ function renderAuthState() {
  */
 export async function initAuthUI() {
   await loadClerkUiBundle();
-  await clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+  // afterSignOutUrl only takes effect as a global clerk.load() option, not as
+  // a per-component mountUserButton() prop (confirmed against Clerk's docs
+  // after the mountUserButton version silently did nothing in production —
+  // sign-out kept defaulting to "/", the landing page now instead of the app).
+  await clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor }, afterSignOutUrl: '/app.html' });
 
   authScreen = document.getElementById('auth-screen');
   signInEl = document.getElementById('clerk-sign-in');
