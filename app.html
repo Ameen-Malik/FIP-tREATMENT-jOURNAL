@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FIP Journal"/>
+<meta name="theme-color" content="#F2F2F7" id="themeColorMeta"/>
+<title>FIP Journal</title>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="icon" type="image/svg+xml" href="/icon.svg"/>
+<link rel="apple-touch-icon" href="/icon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDKs (compat mode for browser CDN script compatibility)
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+-->
+</head>
+<body>
+<!-- Splash Screen -->
+<div id="splash-screen">
+  <div class="splash-content">
+    <svg class="splash-cat" viewBox="0 0 100 100" width="90" height="90" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 45 C20 70, 80 70, 80 45 C80 30, 70 15, 70 15 L58 32 C54 30, 46 30, 42 32 L30 15 C30 15, 20 30, 20 45 Z" />
+      <path d="M35 48 C35 48, 38 45, 41 48" stroke-width="3" />
+      <path d="M59 48 C59 48, 62 45, 65 48" stroke-width="3" />
+      <path d="M47 54 L50 56 L53 54" stroke-width="2.5" />
+      <path d="M44 59 C47 62, 50 61, 50 61 C50 61, 53 62, 56 59" stroke-width="2.5" />
+    </svg>
+    <div class="splash-title">FIP Journal</div>
+  </div>
+</div>
+
+<!-- Clerk Auth Gate -->
+<div id="auth-screen" style="display:none; min-height:100dvh; align-items:center; justify-content:center; padding:24px; background:var(--bg);">
+  <div style="width:100%; max-width:390px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+    <div style="font-size:22px; font-weight:800; letter-spacing:-.4px; color:var(--l1);">FIP Journal</div>
+    <div id="clerk-sign-in"></div>
+  </div>
+</div>
+
+<div class="shell" style="display:none">
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-row">
+    <div class="nav-title">FIP Journal</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="theme-btn" id="themeBtn" title="Toggle theme">🌙</button>
+      <button class="nav-btn" id="catBtn">🐱 <span id="catName">Set name</span></button>
+      <div class="sync-status" id="syncStatus" title="Synced"><span class="sync-dot"></span><span class="sync-label" id="syncLabel"></span></div>
+      <div id="clerk-user-button"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TODAY -->
+<div class="page active" id="page-today">
+
+  <!-- Dashboard Card -->
+  <div class="dashboard-card">
+    <div class="db-header">
+      <div class="db-title-wrap">
+        <span class="db-cat-name" id="heroName">Treatment day</span>
+        <h1 class="db-day-title" id="heroStatus" style="display: flex; align-items: center; gap: 8px; font-size: 26px;">Day 1 <button id="shareStatusBtn" style="background: none; border: none; font-size: 18px; cursor: pointer; padding: 2px; line-height: 1;" title="Share milestone card">🏆</button></h1>
+      </div>
+      <div class="db-badge">84 DAYS TOTAL</div>
+    </div>
+    <div class="db-progress-container">
+      <div class="db-progress-bar">
+        <div class="db-progress-fill" id="progFill" style="width:0%"></div>
+      </div>
+      <div class="db-progress-labels">
+        <span id="startDateLbl">—</span>
+        <span id="progPct">0%</span>
+        <span id="endDateLbl">—</span>
+      </div>
+    </div>
+    <div class="db-stats">
+      <div class="db-stat-item">
+        <span class="db-stat-val" id="hmDone" style="color:var(--green)">0</span>
+        <span class="db-stat-lbl">Done</span>
+      </div>
+      <div class="db-stat-item">
+        <span class="db-stat-val" id="hmLeft" style="color:var(--orange)">84</span>
+        <span class="db-stat-lbl">Left</span>
+      </div>
+      <div class="db-stat-item">
+        <span class="db-stat-val" id="hmStreak" style="color:var(--blue)">0</span>
+        <span class="db-stat-lbl">Streak</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="injectionTimingBanner" style="margin: 0 16px 14px; padding:10px 14px; background:var(--bd); border:1px solid var(--l4); border-radius:var(--rs); font-size:12px; font-weight:600; color:var(--blue); display:none; align-items:center; gap:8px; line-height: 1.4;">
+    <span style="font-size: 14px;">⏰</span>
+    <span id="injectionTimingText">Next injection due at 20:00 (2h remaining)</span>
+  </div>
+
+  <!-- Logged State Card (shown when complete) -->
+  <div class="logged-state-card" id="loggedStateCard" style="display: none;">
+    <div class="success-checkmark">
+      <svg class="checkmark-svg" viewBox="0 0 52 52">
+        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="checkmark-check" fill="none" d="M14.1 27.2 l7.1 7.2 l16.7 -16.8"/>
+      </svg>
+    </div>
+    <h2 class="logged-title">Today's Entry Logged! 🎉</h2>
+    <p class="logged-streak-msg" id="loggedStreakMsg">One step closer to recovery! 🐾</p>
+    <div class="logged-summary" id="loggedSummary" style="margin: 14px 0 18px; padding: 14px 18px; background: var(--s2); border-radius: var(--rs); width: 100%; border: 1px solid var(--l4); display: flex; flex-direction: column; gap: 8px; text-align: left; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);">
+      <div style="font-size: 11px; font-weight: 700; color: var(--l3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--l4); padding-bottom: 6px; margin-bottom: 4px;">Logged Details</div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--l2);">🌡️ Temperature: <span id="lsTemp" style="color: var(--l1); float: right;">—</span></div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--l2);">⚖️ Weight: <span id="lsWeight" style="color: var(--l1); float: right;">—</span></div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--l2);">💉 Calculated Dose: <span id="lsDose" style="color: var(--l1); float: right;">—</span></div>
+    </div>
+    <p class="logged-guidance">Head over to the Log or Calendar tab to view the readings.</p>
+  </div>
+
+  <!-- Log form (always visible now) -->
+  <div class="log-form" id="logForm">
+    <div class="lf-title">Today's details</div>
+
+    <div class="field-group">
+      <label class="fg-row" for="iTemp" style="border-bottom: 1px solid var(--l4);">
+        <span class="fg-lbl">Temperature</span>
+        <input class="fg-inp" id="iTemp" type="number" step="0.1" placeholder="38.5°C"/>
+      </label>
+      <label class="fg-row" for="iWeight" style="border-bottom: 1px solid var(--l4);">
+        <span class="fg-lbl">Weight</span>
+        <input class="fg-inp" id="iWeight" type="number" step="0.1" placeholder="kg"/>
+      </label>
+      <label class="fg-row" for="iTime">
+        <span class="fg-lbl">Time of Injection</span>
+        <input class="fg-inp" id="iTime" type="time" style="color:var(--l1); font-weight:600; background:none; border:none; outline:none; text-align:right;" value="20:00"/>
+      </label>
+    </div>
+
+    <div class="field-group" id="injectionFieldsToday">
+      <div class="pill-label">Vial concentration</div>
+      <div class="pill-row" id="concPills">
+        <button class="pill" data-v="20">20 mg/ml</button>
+        <button class="pill" data-v="30">30 mg/ml</button>
+        <button class="pill" data-v="40">40 mg/ml</button>
+      </div>
+    </div>
+
+    <div class="field-group" id="doseFieldsToday">
+      <label class="fg-row" for="iDoseKg">
+        <span class="fg-lbl">Dose (mg/kg)</span>
+        <input class="fg-inp" id="iDoseKg" type="number" step="0.1" placeholder="auto"/>
+      </label>
+      <label class="fg-row" for="iActual">
+        <span class="fg-lbl">Actual dose</span>
+        <input class="fg-inp" id="iActual" type="number" step="0.01" placeholder="ml"/>
+      </label>
+    </div>
+
+    <div class="field-group" id="capsuleFieldsToday" style="display:none">
+      <div class="pill-label">Capsule packet</div>
+      <div class="pill-row" id="capsulePillsToday">
+        <button class="pill pill-pink" data-v="lt2_5">Pink<br>&lt;2.5kg</button>
+        <button class="pill pill-green" data-v="2_5_to_5">Green<br>2.5–5kg</button>
+        <button class="pill pill-blue" data-v="gt5">Blue<br>&gt;5kg</button>
+      </div>
+    </div>
+
+    <div class="ta-wrap">
+      <textarea class="ta" id="iNote" placeholder="Notes, observations…"></textarea>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="today-cta">
+    <div class="cta-date" id="ctaDate">—</div>
+    <div class="hold-to-confirm" id="holdContainer">
+      <div class="hold-fill" id="holdFill"></div>
+      <div class="hold-text" id="holdText">Press & Hold to Log Injection</div>
+      <div class="hold-thumb" id="holdThumb">
+        <span class="hold-icon" id="holdIcon">
+          <svg class="hold-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info / settings rows -->
+  <div class="info-rows">
+    <div class="ir" id="protoRow">
+      <div class="ir-icon">⚙️</div>
+      <div class="ir-body">
+        <div class="ir-title">Protocol</div>
+        <div class="ir-sub" id="protoSub">Tap to set FIP type & defaults</div>
+      </div>
+      <div class="ir-arr">›</div>
+    </div>
+    <div class="ir">
+      <div class="ir-icon">🎯</div>
+      <div class="ir-body">
+        <div class="ir-title">Completion</div>
+        <div class="ir-sub" id="completionSub">—</div>
+      </div>
+    </div>
+    <div class="ir" id="shareRow">
+      <div class="ir-icon">🔗</div>
+      <div class="ir-body">
+        <div class="ir-title">Share with Vet</div>
+        <div class="ir-sub">Read-only report link, no sign-in needed</div>
+      </div>
+      <div class="ir-arr">›</div>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div class="export-row">
+    <button class="exp-btn" id="exportCSV">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+    <button class="exp-btn" id="exportXLS">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Export Excel
+    </button>
+  </div>
+
+</div><!-- /today -->
+
+<!-- CALENDAR -->
+<div class="page" id="page-calendar">
+  <div class="cal-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="cal-month" id="calMonth">—</div>
+      <button class="exp-btn" id="calBatchBtn" style="padding: 4px 10px; font-size: 11px; height: 26px; border-radius: 13px; font-weight: 700; width: auto; border: 1px solid var(--l4); background: var(--s2); cursor:pointer;">Batch Log</button>
+    </div>
+    <div class="cal-navs">
+      <button class="cal-nav" id="calPrev">‹</button>
+      <button class="cal-nav" id="calNext">›</button>
+    </div>
+  </div>
+
+  <div class="cal-grid">
+    <div class="cal-dow-row">
+      <div class="cal-dow">S</div><div class="cal-dow">M</div><div class="cal-dow">T</div>
+      <div class="cal-dow">W</div><div class="cal-dow">T</div><div class="cal-dow">F</div><div class="cal-dow">S</div>
+    </div>
+    <div class="cal-days-grid" id="calDays"></div>
+    <div class="cal-legend" style="margin-top:14px;padding:0 2px">
+      <div class="leg"><div class="leg-pip" style="background:var(--green)"></div>Done</div>
+      <div class="leg"><div class="leg-pip" style="background:var(--blue)"></div>Today</div>
+      <div class="leg"><div class="leg-pip" style="background:var(--red);opacity:.6"></div>Missed</div>
+    </div>
+  </div>
+
+  <div class="day-card" id="dayCard">
+    <div class="dc-top">
+      <div class="dc-date" id="dcDate">—</div>
+      <div class="dc-day-badge" id="dcBadge">Day —</div>
+    </div>
+    <div class="dc-body" id="dcBody"></div>
+    <div class="dc-actions" id="dcActions"></div>
+  </div>
+  <div class="day-card-placeholder" id="dayCardPlaceholder">
+    <span style="font-size: 24px;">📅</span>
+    <span>Select a day on the calendar to view details or log retroactively.</span>
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="page" id="page-log">
+  <div class="log-title">History</div>
+  <div id="logList"></div>
+</div>
+
+</div><!-- /shell -->
+
+<!-- TAB BAR -->
+<div class="tabbar" style="display:none">
+  <button class="tb active" data-p="today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    Today
+  </button>
+  <button class="tb" data-p="calendar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendar
+  </button>
+  <button class="tb" data-p="log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+    Log
+  </button>
+</div>
+
+<!-- SHEET: Cat Name -->
+<div class="sheet-ov" id="nameSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Cat's name</div>
+    <div class="sheet-sub">Personalise the journal</div>
+    <div class="sh-group">
+      <div class="sh-row"><input class="sh-inp" id="nameInp" placeholder="Luna, Mochi…" maxlength="24" autocomplete="off" style="width:100%;text-align:left"/></div>
+    </div>
+    <div class="sh-footer">
+      <button class="sh-btn sh-btn-blue" id="saveNameBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Protocol -->
+<div class="sheet-ov" id="protoSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Protocol</div>
+    <div class="sheet-sub">Set once. Applied as default each day — override any day manually.</div>
+    <div class="sh-sect">FIP TYPE</div>
+    <div class="sh-type-pills" id="typePills">
+      <button class="sh-type-pill" data-v="dry"><span>Dry FIP</span><span class="sh-dose">6 mg/kg</span></button>
+      <button class="sh-type-pill" data-v="wet"><span>Wet FIP</span><span class="sh-dose">8 mg/kg</span></button>
+      <button class="sh-type-pill" data-v="neuro"><span>Neurological</span><span class="sh-dose">10 mg/kg</span></button>
+    </div>
+    <div class="sh-sect">TREATMENT METHOD</div>
+    <div class="sh-type-pills" id="methodPills">
+      <button class="sh-type-pill" data-v="injection"><span>💉 Injection</span></button>
+      <button class="sh-type-pill" data-v="capsule"><span>💊 Oral capsule</span></button>
+    </div>
+    <div class="sh-note" id="methodSwitchNote" style="display:none">Switches today onward — earlier logged days keep whatever method was actually used that day.</div>
+    <div class="sh-note" id="capsuleNeuroWarning" style="display:none;color:var(--orange)">⚠️ Oral capsules are generally not recommended once neurological signs are present — check with your vet before switching.</div>
+    <div id="injectionProtoFields">
+      <div class="sh-sect">DEFAULT VIAL CONCENTRATION</div>
+      <div class="sh-group">
+        <div class="sh-pills" id="protoConc">
+          <button class="sh-pill" data-v="20">20 mg/ml</button>
+          <button class="sh-pill" data-v="30">30 mg/ml</button>
+          <button class="sh-pill" data-v="40">40 mg/ml</button>
+        </div>
+      </div>
+    </div>
+    <div class="sh-sect">CAT'S WEIGHT (kg)</div>
+    <div class="sh-group">
+      <label class="sh-row" for="protoWeight"><span class="sh-lbl">Base weight</span><input class="sh-inp" id="protoWeight" type="number" step="0.1" placeholder="e.g. 4.2"/></label>
+    </div>
+    <div id="capsuleBandReadout" class="sh-note" style="display:none"></div>
+    <div class="sh-note" id="injectionNote">Actual dose (ml) = weight × mg/kg ÷ concentration. Auto-calculated daily.</div>
+    <div class="sh-footer">
+      <button class="sh-btn sh-btn-blue" id="saveProtoBtn">Save Protocol</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Share with Vet -->
+<div class="sheet-ov" id="shareSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Share with Vet</div>
+    <div class="sheet-sub">Anyone with this link can view a read-only report — no sign-in needed. Your account info is never shown.</div>
+    <div class="sh-sect">LINK</div>
+    <div class="sh-group">
+      <div class="sh-row">
+        <input class="sh-inp" id="shareLinkInput" type="text" readonly style="cursor:text" />
+      </div>
+    </div>
+    <div class="sh-footer">
+      <button class="sh-btn sh-btn-blue" id="shareCopyBtn">Copy Link</button>
+      <button class="sh-btn" id="shareRevokeBtn" style="color:var(--red)">Revoke &amp; Generate New Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Edit Day -->
+<div class="sheet-ov" id="editSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="editTitle">Log Entry</div>
+    <div class="sheet-sub" id="editSub">—</div>
+    <div class="sh-group">
+      <label class="sh-row" for="eTemp" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Temperature</span><input class="sh-inp" id="eTemp" type="number" step="0.1" placeholder="°C"/></label>
+      <label class="sh-row" for="eWeight" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Weight</span><input class="sh-inp" id="eWeight" type="number" step="0.1" placeholder="kg"/></label>
+      <label class="sh-row" for="eTime"><span class="sh-lbl">Time of Injection</span><input class="sh-inp" id="eTime" type="time" style="color:var(--l1); font-weight:600;"/></label>
+    </div>
+    <div class="sh-sect">METHOD GIVEN THIS DAY</div>
+    <div class="sh-type-pills" id="eMethodPills">
+      <button class="sh-type-pill" data-v="injection"><span>💉 Injection</span></button>
+      <button class="sh-type-pill" data-v="capsule"><span>💊 Oral capsule</span></button>
+    </div>
+    <div id="editInjectionFields">
+      <div class="sh-sect">VIAL CONCENTRATION</div>
+      <div class="sh-group">
+        <div class="sh-pills" id="editConc">
+          <button class="sh-pill" data-v="20">20 mg/ml</button>
+          <button class="sh-pill" data-v="30">30 mg/ml</button>
+          <button class="sh-pill" data-v="40">40 mg/ml</button>
+        </div>
+      </div>
+      <div class="sh-group">
+        <label class="sh-row" for="eDoseKg"><span class="sh-lbl">Dose (mg/kg)</span><input class="sh-inp" id="eDoseKg" type="number" step="0.1" placeholder="auto"/></label>
+        <label class="sh-row" for="eActual"><span class="sh-lbl">Actual dose</span><input class="sh-inp" id="eActual" type="number" step="0.01" placeholder="ml"/></label>
+      </div>
+    </div>
+    <div id="editCapsuleFields" style="display:none">
+      <div class="sh-sect">CAPSULE PACKET</div>
+      <div class="sh-pills" id="editCapsulePills">
+        <button class="sh-pill pill-pink" data-v="lt2_5">Pink &lt;2.5kg</button>
+        <button class="sh-pill pill-green" data-v="2_5_to_5">Green 2.5–5kg</button>
+        <button class="sh-pill pill-blue" data-v="gt5">Blue &gt;5kg</button>
+      </div>
+    </div>
+    <textarea class="sh-ta" id="eNote" placeholder="Notes…"></textarea>
+    <div class="sh-footer">
+      <button class="sh-btn sh-btn-blue" id="editSaveBtn">Save Entry</button>
+      <button class="sh-btn sh-btn-red" id="editDelBtn" style="display:none">Remove Entry</button>
+      <button class="sh-btn sh-btn-ghost" id="editCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Cat Switcher -->
+<div class="sheet-ov" id="catSwitcherSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">My Cats</div>
+    <div class="sheet-sub">Manage and switch between different cats.</div>
+    
+    <div class="sh-sect">ACTIVE PROFILES</div>
+    <div class="field-group" id="switcherCatList" style="padding: 0; background: none; border: none; box-shadow: none; display: flex; flex-direction: column; gap: 8px; width: 100%;">
+      <!-- Cat rows go here -->
+    </div>
+    
+    <div class="sh-footer" style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px;">
+      <button class="sh-btn sh-btn-blue" id="switcherAddBtn" style="width:100%">+ Add New Cat</button>
+      <button class="sh-btn sh-btn-ghost" id="cloudSyncBtn" style="width:100%; display:none;">☁️ Link Account to Cloud</button>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('catSwitcherSheet')" style="width:100%">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Onboarding / Add Cat -->
+<div class="sheet-ov" id="onboardingSheet">
+  <div class="sheet" style="max-height: 90vh; overflow-y: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="onboardTitle">Welcome to FIP Journal 🐾</div>
+    <div class="sheet-sub" id="onboardSub">Let's set up your cat's recovery profile.</div>
+    
+    <div class="sh-sect">CAT'S NAME</div>
+    <div class="sh-group">
+      <label class="sh-row" for="obName">
+        <span class="sh-lbl">Name</span>
+        <input class="sh-inp" id="obName" type="text" placeholder="e.g. Luna"/>
+      </label>
+    </div>
+    
+    <div class="sh-sect">FIP TYPE</div>
+    <div class="sh-type-pills" id="obTypePills">
+      <button class="sh-type-pill" data-v="dry"><span>Dry FIP</span><span class="sh-dose">6 mg/kg</span></button>
+      <button class="sh-type-pill" data-v="wet"><span>Wet FIP</span><span class="sh-dose">8 mg/kg</span></button>
+      <button class="sh-type-pill" data-v="neuro"><span>Neurological</span><span class="sh-dose">10 mg/kg</span></button>
+    </div>
+    
+    <div class="sh-sect">DEFAULT VIAL CONCENTRATION</div>
+    <div class="sh-group">
+      <div class="sh-pills" id="obConcPills">
+        <button class="sh-pill" data-v="20">20 mg/ml</button>
+        <button class="sh-pill sel" data-v="30">30 mg/ml</button>
+        <button class="sh-pill" data-v="40">40 mg/ml</button>
+      </div>
+    </div>
+    
+    <div class="sh-sect">CAT'S WEIGHT (kg)</div>
+    <div class="sh-group">
+      <label class="sh-row" for="obWeight">
+        <span class="sh-lbl">Base Weight</span>
+        <input class="sh-inp" id="obWeight" type="number" step="0.1" placeholder="e.g. 3.2"/>
+      </label>
+    </div>
+
+    <div class="sh-sect">DAILY INJECTION SCHEDULE</div>
+    <div class="sh-group">
+      <label class="sh-row" for="obTime">
+        <span class="sh-lbl">Target Time</span>
+        <input class="sh-inp" id="obTime" type="time" style="color:var(--l1); font-weight:600; background:none; border:none; outline:none; text-align:right;" value="20:00"/>
+      </label>
+    </div>
+    
+    <div class="sh-sect" id="obStageSect">TREATMENT STAGE</div>
+    <div id="obStageGroup" style="display:flex; flex-direction:column; gap:8px; width:100%; padding:0 16px;">
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--l1); cursor:pointer;">
+        <input type="radio" name="obStage" value="today" checked style="accent-color: var(--blue);">
+        <span>Starting treatment today (Day 1)</span>
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--l1); cursor:pointer;">
+        <input type="radio" name="obStage" value="past" style="accent-color: var(--blue);">
+        <span>Already in treatment (Mid-treatment)</span>
+      </label>
+    </div>
+    
+    <div class="sh-sect" id="obDateSect" style="display:none">TREATMENT START DATE</div>
+    <div class="sh-group" id="obDateGroup" style="display:none; flex-direction:column;">
+      <div class="sh-row" id="obStartDateRow" style="cursor:pointer; width:100%; display:flex; justify-content:space-between; align-items:center;">
+        <span class="sh-lbl">Start Date</span>
+        <span class="sh-val" id="obStartDateText" style="font-weight: 600; color: var(--blue);">23 Jun 2026</span>
+        <input type="hidden" id="obStartDate" value="2026-06-23"/>
+      </div>
+      <div id="obCalendarWrapper" style="display:none; width:100%; padding:14px 16px; border-top:1px solid var(--l4); background:var(--s1); transition:all 0.2s ease;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <button type="button" id="obCalPrev" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer; font-size:14px; font-family:var(--font);">‹ Prev</button>
+          <span id="obCalMonth" style="font-weight:700; font-size:14px; color:var(--l1); font-family:var(--font);">June 2026</span>
+          <button type="button" id="obCalNext" style="background:none; border:none; color:var(--blue); font-weight:700; cursor:pointer; font-size:14px; font-family:var(--font);">Next ›</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center; font-size:11px; color:var(--l3); font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+          <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+        </div>
+        <div id="obCalDays" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;"></div>
+      </div>
+    </div>
+    
+    <div class="sh-footer" style="margin-top:20px; width:100%">
+      <button class="sh-btn sh-btn-blue" id="obSaveBtn" style="width:100%">Create Recovery Profile</button>
+      <button class="sh-btn sh-btn-ghost" id="obCancelBtn" style="width:100%; display:none;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Banner: Batch Log Selection -->
+<div id="batchLogBanner" style="position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 358px; background: rgba(0, 122, 255, 0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 12px 18px; display: none; align-items: center; justify-content: space-between; box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2); z-index: 998; color: #ffffff; transition: bottom 0.3s ease;">
+  <div style="font-size: 13px; font-weight: 700;"><span id="batchCount">0</span> days selected</div>
+  <div style="display: flex; gap: 8px;">
+    <button class="sh-btn" id="batchConfirmBtn" style="background: #ffffff; color: var(--blue); padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; height: auto; font-weight: 700; cursor: pointer;">Next</button>
+    <button class="sh-btn" id="batchCancelBtn" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; height: auto; font-weight: 700; cursor: pointer;">Cancel</button>
+  </div>
+</div>
+
+<!-- SHEET: Batch Log Details -->
+<div class="sheet-ov" id="batchLogSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Batch Log Entries</div>
+    <div class="sheet-sub">Apply values to all selected days.</div>
+    
+    <div class="sh-sect">DAILY DETAILS (OPTIONAL)</div>
+    <div class="sh-group">
+      <label class="sh-row" for="bTemp" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Temperature</span><input class="sh-inp" id="bTemp" type="number" step="0.1" placeholder="°C (optional)"/></label>
+      <label class="sh-row" for="bWeight" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Weight</span><input class="sh-inp" id="bWeight" type="number" step="0.1" placeholder="kg (optional)"/></label>
+      <label class="sh-row" for="bTime"><span class="sh-lbl">Default Time</span><input class="sh-inp" id="bTime" type="time" style="color:var(--l1); font-weight:600;" value="20:00"/></label>
+    </div>
+    
+    <div class="sh-sect">METHOD</div>
+    <div class="sh-type-pills" id="bMethodPills">
+      <button class="sh-type-pill" data-v="injection"><span>💉 Injection</span></button>
+      <button class="sh-type-pill" data-v="capsule"><span>💊 Oral capsule</span></button>
+    </div>
+    <div id="batchInjectionFields">
+      <div class="sh-sect">VIAL CONCENTRATION & DOSAGE</div>
+      <div class="sh-group">
+        <label class="sh-row" for="bDoseKg" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Dose (mg/kg)</span><input class="sh-inp" id="bDoseKg" type="number" step="0.1" placeholder="auto"/></label>
+        <label class="sh-row" for="bActual"><span class="sh-lbl">Actual dose</span><input class="sh-inp" id="bActual" type="number" step="0.01" placeholder="ml (optional)"/></label>
+      </div>
+    </div>
+    <div id="batchCapsuleFields" style="display:none">
+      <div class="sh-sect">CAPSULE PACKET</div>
+      <div class="sh-pills" id="bCapsulePills">
+        <button class="sh-pill pill-pink" data-v="lt2_5">Pink &lt;2.5kg</button>
+        <button class="sh-pill pill-green" data-v="2_5_to_5">Green 2.5–5kg</button>
+        <button class="sh-pill pill-blue" data-v="gt5">Blue &gt;5kg</button>
+      </div>
+    </div>
+    
+    <textarea class="sh-ta" id="bNote" placeholder="Notes (optional, e.g. Backfilled logs)"></textarea>
+    
+    <div class="sh-footer" style="margin-top: 20px; width: 100%;">
+      <button class="sh-btn sh-btn-blue" id="batchSaveSubmitBtn" style="width: 100%">Log Selected Days</button>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('batchLogSheet')" style="width: 100%">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Cloud Sync / Link Account -->
+<div class="sheet-ov" id="cloudLinkSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Cloud Account Sync ☁️</div>
+    <div class="sheet-sub">Link your account to sync data across all your devices and prevent data loss.</div>
+    
+    <div class="sh-sect">EMAIL & PASSWORD</div>
+    <div class="sh-group">
+      <div class="sh-row" style="border-bottom: 1px solid var(--l4);"><span class="sh-lbl">Email</span><input class="sh-inp" id="cloudEmail" type="email" placeholder="email@example.com" style="text-align: right;"/></div>
+      <div class="sh-row"><span class="sh-lbl">Password</span><input class="sh-inp" id="cloudPassword" type="password" placeholder="••••••••" style="text-align: right;"/></div>
+    </div>
+    
+    <div class="sh-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <button class="sh-btn sh-btn-blue" id="cloudSubmitBtn" style="width: 100%">Link Account / Login</button>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('cloudLinkSheet')" style="width: 100%">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Share Recovery Card -->
+<div class="sheet-ov" id="shareCardSheet">
+  <div class="sheet" style="max-height: 90vh; overflow-y: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Share Recovery Milestone 🏆</div>
+    <div class="sheet-sub">Save or share this recovery card with your vet or on social support groups.</div>
+    
+    <div style="display: flex; justify-content: center; margin: 16px 0;">
+      <canvas id="shareCanvas" width="600" height="400" style="width: 100%; max-width: 320px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid var(--l4);"></canvas>
+    </div>
+    
+    <div class="sh-footer" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <a class="sh-btn sh-btn-blue" id="downloadShareBtn" style="text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;" download="fip-milestone.png">Download Image</a>
+      <button class="sh-btn sh-btn-ghost" onclick="closeSheet('shareCardSheet')" style="width: 100%">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: Custom Confirm Dialogue -->
+<div class="sheet-ov" id="confirmSheet" style="z-index: 1001;">
+  <div class="sheet" style="padding: 20px 20px 24px; text-align: center; max-width: 340px; margin: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="confirmTitle" style="color:var(--red); font-size: 18px; margin-bottom: 6px;">Confirm Action</div>
+    <div class="sheet-sub" id="confirmMessage" style="margin-bottom:20px; line-height:1.5; font-size: 13px; font-weight: 500; color: var(--l2);">Are you sure?</div>
+    <div class="sh-footer" style="display:flex; gap:12px; width:100%; padding:0;">
+      <button class="sh-btn sh-btn-red" id="confirmYesBtn" style="flex:1; font-size: 13px; font-weight: 700; height: 38px;">Delete</button>
+      <button class="sh-btn sh-btn-ghost" id="confirmNoBtn" style="flex:1; font-size: 13px; font-weight: 700; height: 38px; border: 1px solid var(--l4); background: var(--s2);">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" style="position:fixed; top: calc(var(--st) + 16px); left: 50%; transform: translateX(-50%) translateY(-120px); width: calc(100% - 32px); max-width: 358px; background: var(--ov); backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--rc); padding: 14px 16px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.08); display: none; flex-direction: column; gap: 10px; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; opacity: 0; pointer-events: none;">
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="font-size: 24px; flex-shrink: 0; padding-top: 2px;">📲</div>
+    <div style="flex: 1; min-width: 0;">
+      <h3 style="font-size: 14px; font-weight: 800; color: var(--l1); margin-bottom: 2px; letter-spacing: -0.2px;">Install FIP Journal</h3>
+      <p id="pwaInstallDesc" style="font-size: 12px; font-weight: 500; color: var(--l2); line-height: 1.4;">Add to your home screen for quick offline access and daily tracking.</p>
+    </div>
+    <button id="closePwaBanner" style="background: none; border: none; font-size: 16px; color: var(--l3); cursor: pointer; padding: 2px; line-height: 1;">✕</button>
+  </div>
+  <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <button class="sh-btn" id="btnPwaInstall" style="width: auto; padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: var(--rs); background: var(--blue); color: #ffffff; border: none; height: auto; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      Install App
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

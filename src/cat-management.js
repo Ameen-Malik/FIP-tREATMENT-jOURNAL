@@ -1,5 +1,5 @@
 import { S_data, save } from './state.js';
-import { MO, dkey, todayKey, fmtFull, calcMl } from './utils.js';
+import { MO, dkey, todayKey, fmtFull, calcMl, capsuleBandForWeight } from './utils.js';
 import { toast } from './ui/toast.js';
 import { openSheet, closeSheet } from './ui/sheets.js';
 import { renderAll } from './render/index.js';
@@ -302,17 +302,24 @@ document.getElementById('obSaveBtn').addEventListener('click', () => {
       cat.startDate = startDateVal;
       cat.typicalTime = typicalTimeVal;
 
-      // Propagate changes to today's log if not completed
+      // Propagate changes to today's log if not completed (only touches
+      // weight/dose fields for the cat's current method — this form has no
+      // method selector of its own, that lives in the Protocol sheet).
       if (editingCatId === S_data.activeCatId) {
         const tk = todayKey();
         if (!S_data.logs[editingCatId]) S_data.logs[editingCatId] = {};
         const log = S_data.logs[editingCatId][tk] || { done: false };
         if (!log.done) {
-          const doseKg = type === 'dry' ? 6 : type === 'wet' ? 8 : type === 'neuro' ? 10 : 6;
           log.weight = weight;
-          log.conc = conc;
-          log.doseKg = doseKg;
-          log.actual = calcMl(weight, doseKg, conc);
+          if (cat.method === 'capsule') {
+            log.method = 'capsule';
+            log.capsuleBand = capsuleBandForWeight(weight);
+          } else {
+            const doseKg = type === 'dry' ? 6 : type === 'wet' ? 8 : type === 'neuro' ? 10 : 6;
+            log.conc = conc;
+            log.doseKg = doseKg;
+            log.actual = calcMl(weight, doseKg, conc);
+          }
           S_data.logs[editingCatId][tk] = log;
         }
       }
@@ -361,7 +368,8 @@ document.getElementById('obSaveBtn').addEventListener('click', () => {
         conc: conc,
         temp: '',
         weight: weight,
-        note: 'Auto-backfilled during setup'
+        note: 'Auto-backfilled during setup',
+        method: 'injection'
       };
     }
   } else {
@@ -375,7 +383,8 @@ document.getElementById('obSaveBtn').addEventListener('click', () => {
     conc: conc,
     weight: weight,
     startDate: startDateVal,
-    typicalTime: typicalTimeVal
+    typicalTime: typicalTimeVal,
+    method: 'injection'
   };
   S_data.logs[catId] = catLogs;
   S_data.activeCatId = catId;

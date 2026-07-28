@@ -15,22 +15,62 @@ import './edit-sheet.js';
 import './protocol-sheet.js';
 import './milestone-card.js';
 import './batch-log.js';
+import './pet-sharing.js';
 import './export.js';
 import './tabs.js';
 import './pwa.js';
+
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
+}
+
+// Sign-in never used to be wrapped — a slow/failed Clerk load (bad key,
+// blocked script, network hiccup) threw past an uncaught await and left the
+// splash screen up forever with no way to tell what happened.
+function showBootError(err) {
+  const splash = document.getElementById('splash-screen');
+  if (!splash) return;
+  splash.classList.remove('fade-out');
+  splash.innerHTML = `
+    <div class="splash-content">
+      <div style="font-size:40px">⚠️</div>
+      <div class="splash-title" style="font-size:16px;text-align:center;padding:0 24px">Couldn't load sign-in</div>
+      <div style="font-size:13px;color:var(--l3);text-align:center;padding:0 24px;margin-top:4px">${err?.message || 'Unknown error'}</div>
+      <button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;border-radius:20px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">Retry</button>
+    </div>`;
+}
 
 /* ── BOOT ── */
 async function boot() {
   const minSplash = new Promise(r => setTimeout(r, 1200));
 
-  await initAuthUI(); // shows sign-in screen or app shell, whichever applies
+  try {
+    // shows sign-in screen or app shell, whichever applies
+    await withTimeout(initAuthUI(), 15000, "Sign-in didn't respond in time — check your connection and retry.");
+  } catch (err) {
+    console.error('[boot] initAuthUI failed:', err);
+    await minSplash;
+    showBootError(err);
+    return;
+  }
   await minSplash;
   document.getElementById('splash-screen')?.classList.add('fade-out');
 
   await waitForSignIn(); // resolves now if already signed in
 
   initFirebase();
-  await load();
+  try {
+    await load();
+  } catch (err) {
+    // load() already degrades gracefully on a Supabase failure — this is a
+    // backstop for anything else unexpected, so the rest of boot (sync
+    // status, hold-to-log wiring, first render) still runs instead of
+    // silently stopping with the splash screen gone but nothing wired up.
+    console.error('[boot] load() failed unexpectedly:', err);
+  }
   initSyncStatus();
   initOutbox();
   initHoldToConfirm();

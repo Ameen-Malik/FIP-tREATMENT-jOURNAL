@@ -32,7 +32,7 @@ export function updateHoldButtonState(done) {
         <polyline points="9 18 15 12 9 6"/>
       </svg>
     `;
-    text.textContent = 'Press & Hold to Log Injection';
+    text.textContent = S.proto.method === 'capsule' ? 'Press & Hold to Log Capsule' : 'Press & Hold to Log Injection';
   }
 }
 

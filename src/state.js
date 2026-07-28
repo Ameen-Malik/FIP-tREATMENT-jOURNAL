@@ -29,8 +29,9 @@ export let S = {
     return cat ? {
       type: cat.type || '',
       conc: parseInt(cat.conc) || 30,
-      weight: cat.weight || ''
-    } : { type: '', conc: 30, weight: '' };
+      weight: cat.weight || '',
+      method: cat.method || 'injection'
+    } : { type: '', conc: 30, weight: '', method: 'injection' };
   },
   set proto(val) {
     const cat = S_data.cats[S_data.activeCatId];
@@ -38,6 +39,7 @@ export let S = {
       cat.type = val.type;
       cat.conc = parseInt(val.conc);
       cat.weight = val.weight;
+      if (val.method) cat.method = val.method;
     }
   },
   get logs() {
@@ -112,15 +114,26 @@ export async function load() {
     S_data.activeCatId = '';
     S_data.cats = {};
     S_data.logs = {};
-    const cats = await getCats();
-    for (const cat of cats) {
-      S_data.cats[cat.id] = cat;
-      S_data.logs[cat.id] = await getLogs(cat.id);
+    try {
+      const cats = await getCats();
+      for (const cat of cats) {
+        S_data.cats[cat.id] = cat;
+        S_data.logs[cat.id] = await getLogs(cat.id);
+      }
+      S_data.activeCatId = cats[0]?.id || '';
+      await mirrorSet(MIRROR_OWNER_KEY, ownerId);
+      lastSynced = { cats: structuredClone(S_data.cats), logs: structuredClone(S_data.logs) };
+      await mirrorSet(LAST_SYNCED_KEY, lastSynced);
+    } catch (err) {
+      // A Supabase failure here (auth rejected, offline, RLS misconfig) used
+      // to throw straight out of boot() and silently skip every step after
+      // load() — sync status, hold-to-log wiring, the first render. Degrade
+      // instead: start from an empty local state and leave mirrorOwner unset
+      // so the next successful load retries the real pull, rather than
+      // permanently treating this empty state as "this user has no data".
+      console.error('[load] could not pull from Supabase:', err);
+      toast("Couldn't reach cloud sync — starting fresh locally");
     }
-    S_data.activeCatId = cats[0]?.id || '';
-    await mirrorSet(MIRROR_OWNER_KEY, ownerId);
-    lastSynced = { cats: structuredClone(S_data.cats), logs: structuredClone(S_data.logs) };
-    await mirrorSet(LAST_SYNCED_KEY, lastSynced);
   }
 
   // One-time, invisible migration: nothing pulled from the cloud and this is

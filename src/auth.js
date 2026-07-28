@@ -48,7 +48,17 @@ function renderAuthState() {
       // withSignUp: keeps sign-up embedded in this same mounted component
       // instead of the default behavior of linking out to Clerk's hosted
       // Account Portal.
-      clerk.mountSignIn(signInEl, { withSignUp: true });
+      // fallbackRedirectUrl/signUpFallbackRedirectUrl: Clerk defaults both to
+      // "/" when omitted — correct back when "/" was the app, wrong now that
+      // "/" is the marketing landing page. Without this, completing sign-in
+      // (and especially the Google OAuth flow, which does a real cross-site
+      // redirect rather than resolving in place) drops the user back on the
+      // landing page instead of into the app.
+      clerk.mountSignIn(signInEl, {
+        withSignUp: true,
+        fallbackRedirectUrl: '/app.html',
+        signUpFallbackRedirectUrl: '/app.html',
+      });
       mountedSignIn = true;
     }
   }

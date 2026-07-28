@@ -18,3 +18,23 @@ export function calcMl(w,dkg,c) {
   // the literal string "Infinity".
   return !cf || isNaN(v) || !isFinite(v) ? null : v.toFixed(2);
 }
+
+// Oral capsule dosing is tiered by weight band, not computed like injection
+// ml — parents identify which capsule to give by the packet color, not a mg
+// number (per user: pink/green/blue, small to large), so that's the primary
+// UI label; band ids are stable identifiers independent of the color choice.
+export const CAPSULE_BANDS = [
+  { id: 'lt2_5',     label: '< 2.5 kg',  color: 'pink',  var: '--pink'  },
+  { id: '2_5_to_5',  label: '2.5–5 kg',  color: 'green', var: '--green' },
+  { id: 'gt5',       label: '> 5 kg',    color: 'blue',  var: '--blue'  },
+];
+export function capsuleBandForWeight(kg) {
+  const w = parseFloat(kg);
+  if (!w) return null;
+  if (w < 2.5) return 'lt2_5';
+  if (w <= 5) return '2_5_to_5';
+  return 'gt5';
+}
+export function capsuleBandInfo(bandId) {
+  return CAPSULE_BANDS.find(b => b.id === bandId) || null;
+}

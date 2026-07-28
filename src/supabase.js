@@ -30,6 +30,7 @@ function toCatRow(cat) {
     weight: numOrNull(cat.weight),
     start_date: cat.startDate,
     typical_time: cat.typicalTime || null,
+    method: cat.method || 'injection',
   };
 }
 function fromCatRow(row) {
@@ -41,6 +42,7 @@ function fromCatRow(row) {
     weight: row.weight || '',
     startDate: row.start_date,
     typicalTime: row.typical_time || '',
+    method: row.method || 'injection',
   };
 }
 
@@ -56,6 +58,8 @@ function toLogRow(catId, dateKey, entry) {
     dose_kg: numOrNull(entry.doseKg),
     actual: numOrNull(entry.actual),
     note: entry.note || null,
+    method: entry.method || 'injection',
+    capsule_band: entry.capsuleBand || null,
   };
 }
 function fromLogRow(row) {
@@ -68,6 +72,8 @@ function fromLogRow(row) {
     doseKg: row.dose_kg ?? undefined,
     actual: row.actual ?? undefined,
     note: row.note ?? undefined,
+    method: row.method || 'injection',
+    capsuleBand: row.capsule_band ?? undefined,
   };
 }
 
@@ -108,5 +114,25 @@ export async function upsertLog(catId, dateKey, entry) {
 
 export async function deleteLog(catId, dateKey) {
   const { error } = await supabase.from('logs').delete().eq('cat_id', catId).eq('date_key', dateKey);
+  if (error) throw error;
+}
+
+/** Returns the active share link id for a cat, creating one if none exists. */
+export async function getOrCreateShareLink(catId) {
+  const { data: existing, error: selErr } = await supabase
+    .from('share_links').select('id').eq('cat_id', catId).eq('revoked', false).maybeSingle();
+  if (selErr) throw selErr;
+  if (existing) return existing.id;
+
+  const { data: created, error: insErr } = await supabase
+    .from('share_links').insert({ cat_id: catId }).select('id').single();
+  if (insErr) throw insErr;
+  return created.id;
+}
+
+/** Revokes the active share link for a cat, if any. */
+export async function revokeShareLink(catId) {
+  const { error } = await supabase
+    .from('share_links').update({ revoked: true }).eq('cat_id', catId).eq('revoked', false);
   if (error) throw error;
 }

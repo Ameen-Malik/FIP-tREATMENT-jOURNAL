@@ -2,6 +2,8 @@ import { S, curDay, stats, dayNDate, protoDoseKg } from '../state.js';
 import { TOTAL, fmtShort, fmtFull, todayKey } from '../utils.js';
 import { setPills } from '../ui/pills.js';
 import { updateHoldButtonState, getNextInjectionTarget } from '../ui/hold-to-confirm.js';
+import { applyMethodToTodayForm } from '../actions.js';
+import { capsuleBandInfo } from '../utils.js';
 
 export function renderToday() {
   const day = curDay(), st = stats(), tk = todayKey(), log = S.logs[tk]||{};
@@ -21,13 +23,16 @@ export function renderToday() {
   const pct = Math.round(st.done/TOTAL*100);
   document.getElementById('progFill').style.width = pct+'%';
   document.getElementById('progPct').textContent = pct+'%';
+  document.getElementById('startDateLbl').textContent = fmtShort(dayNDate(1));
   document.getElementById('endDateLbl').textContent = fmtShort(dayNDate(84));
   document.getElementById('completionSub').textContent = fmtFull(dayNDate(84));
 
   // Protocol sub
   const pNames = {dry:'Dry FIP · 6 mg/kg',wet:'Wet FIP · 8 mg/kg',neuro:'Neurological · 10 mg/kg'};
-  document.getElementById('protoSub').textContent =
-    S.proto.type ? `${pNames[S.proto.type]} · ${S.proto.conc} mg/ml` : 'Tap to set FIP type & defaults';
+  const methodLabel = S.proto.method === 'capsule' ? '💊 Capsule' : '💉 Injection';
+  document.getElementById('protoSub').textContent = S.proto.type
+    ? `${pNames[S.proto.type]} · ${S.proto.method === 'capsule' ? methodLabel : S.proto.conc + ' mg/ml'}`
+    : 'Tap to set FIP type & defaults';
 
   // CTA date
   document.getElementById('ctaDate').textContent = fmtFull(now);
@@ -56,7 +61,15 @@ export function renderToday() {
     // Populate summary of logged details
     document.getElementById('lsTemp').textContent = log.temp ? `${log.temp}°C` : '—';
     document.getElementById('lsWeight').textContent = log.weight ? `${log.weight} kg` : '—';
-    const doseVal = log.actual ? `${log.actual} ml` : (log.doseKg ? `${log.doseKg} mg/kg` : '—');
+    let doseVal = '—';
+    if (log.method === 'capsule') {
+      const band = capsuleBandInfo(log.capsuleBand);
+      doseVal = band ? `${band.color[0].toUpperCase()}${band.color.slice(1)} capsule` : 'Capsule';
+    } else if (log.actual) {
+      doseVal = `${log.actual} ml`;
+    } else if (log.doseKg) {
+      doseVal = `${log.doseKg} mg/kg`;
+    }
     document.getElementById('lsDose').textContent = doseVal;
 
     // Logged banner state
@@ -121,4 +134,9 @@ export function renderToday() {
   }
 
   setPills('#concPills', log.conc||S.proto.conc||30);
+  applyMethodToTodayForm();
+  if (log.method === 'capsule' && log.capsuleBand) {
+    document.querySelectorAll('#capsulePillsToday .pill').forEach(p =>
+      p.classList.toggle('sel', p.dataset.v === log.capsuleBand));
+  }
 }

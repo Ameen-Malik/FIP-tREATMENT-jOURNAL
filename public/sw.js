@@ -1,5 +1,5 @@
-const V = 'fip-v3';
-const FILES = ['/', '/index.html', '/manifest.json', '/icon.svg'];
+const V = 'fip-v4';
+const FILES = ['/', '/app.html', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(FILES)).catch(() => {}));
@@ -21,6 +21,6 @@ self.addEventListener('fetch', e => {
         caches.open(V).then(c => c.put(e.request, clone));
         return res;
       }))
-      .catch(() => caches.match('/index.html'))
+      .catch(() => caches.match('/app.html'))
   );
 });

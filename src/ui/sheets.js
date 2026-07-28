@@ -11,7 +11,7 @@ export function closeSheet(id) {
 
 window.closeSheet = closeSheet;
 
-['nameSheet','protoSheet','editSheet','catSwitcherSheet','onboardingSheet','cloudLinkSheet','shareCardSheet','batchLogSheet','confirmSheet'].forEach(id => {
+['nameSheet','protoSheet','editSheet','catSwitcherSheet','onboardingSheet','cloudLinkSheet','shareCardSheet','shareSheet','batchLogSheet','confirmSheet'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => {
     if (id === 'onboardingSheet' && !S_data.activeCatId) return;
     if (e.target === document.getElementById(id)) closeSheet(id);

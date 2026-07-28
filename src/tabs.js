@@ -1,5 +1,5 @@
 import { setActivePage, renderCalendar, renderLog } from './render/index.js';
-import { calView } from './render/calendar.js';
+import { shiftCalMonth } from './render/calendar.js';
 
 document.querySelectorAll('.tb').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -15,5 +15,5 @@ document.querySelectorAll('.tb').forEach(btn => {
 });
 
 /* ── CAL NAV ── */
-document.getElementById('calPrev').addEventListener('click', () => { calView.setMonth(calView.getMonth()-1); renderCalendar(); });
-document.getElementById('calNext').addEventListener('click', () => { calView.setMonth(calView.getMonth()+1); renderCalendar(); });
+document.getElementById('calPrev').addEventListener('click', () => shiftCalMonth(-1));
+document.getElementById('calNext').addEventListener('click', () => shiftCalMonth(1));
