@@ -1,4 +1,4 @@
-const V = 'fip-v4';
+const V = 'fip-v5';
 const FILES = ['/', '/app.html', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', e => {
