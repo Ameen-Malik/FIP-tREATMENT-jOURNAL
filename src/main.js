@@ -2,7 +2,7 @@ import './styles.css';
 
 import { initAuthUI, waitForSignIn } from './auth.js';
 import { initFirebase } from './cloud-sync-legacy.js';
-import { load } from './state.js';
+import { load, refreshFromCloudIfClean } from './state.js';
 import { initOutbox } from './outbox.js';
 import { initSyncStatus } from './ui/sync-status.js';
 import { initHoldToConfirm } from './ui/hold-to-confirm.js';
@@ -82,5 +82,17 @@ async function boot() {
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
   }
+
+  // Background cross-device catch-up: the local mirror only ever gets a
+  // cloud pull on a brand-new device/user combo (see load()) — an already-
+  // initialized device otherwise never learns about writes made elsewhere.
+  // Fire this after the first paint (not blocking boot) and again whenever
+  // the tab regains focus, since that's exactly when a second device is
+  // most likely checking for what changed on the first.
+  const catchUp = () => refreshFromCloudIfClean().then(changed => { if (changed) renderAll(); });
+  catchUp();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') catchUp();
+  });
 }
 boot();

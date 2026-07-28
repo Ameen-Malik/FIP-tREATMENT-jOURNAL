@@ -1,7 +1,7 @@
 import { TOTAL } from './utils.js';
 import { dkey, todayKey } from './utils.js';
 import { syncToCloud } from './cloud-sync-legacy.js';
-import { mirrorGet, mirrorSet } from './db.js';
+import { mirrorGet, mirrorSet, outboxGetAll } from './db.js';
 import { enqueue } from './outbox.js';
 import { getUserId } from './auth.js';
 import { getCats, getLogs } from './supabase.js';
@@ -222,6 +222,50 @@ export async function load() {
   lastSynced = (await mirrorGet(LAST_SYNCED_KEY)) || { cats: {}, logs: {} };
 
   await save();
+}
+
+/**
+ * Pulls fresh cats/logs from Supabase and overwrites the local mirror —
+ * but ONLY when the outbox has nothing pending. load() only ever pulls from
+ * the cloud for a brand-new device/user combo; every returning load trusts
+ * the local mirror exclusively and never checks the cloud again, so a
+ * second device can sit indefinitely "synced" (its own outbox is empty)
+ * while genuinely missing writes made elsewhere. A non-empty outbox means
+ * this device has its own unpushed edits — overwriting from the cloud then
+ * would silently lose them, so skip and let those drain first instead.
+ * Returns true if anything actually changed, so the caller knows whether a
+ * re-render is worth doing.
+ */
+export async function refreshFromCloudIfClean() {
+  if (!S_data.activeCatId || !Object.keys(S_data.cats).length) return false;
+  const pending = await outboxGetAll();
+  if (pending.length > 0) return false;
+
+  try {
+    const cats = await getCats();
+    const newCats = {}, newLogs = {};
+    for (const cat of cats) {
+      newCats[cat.id] = cat;
+      newLogs[cat.id] = await getLogs(cat.id);
+    }
+    const changed = JSON.stringify(newCats) !== JSON.stringify(S_data.cats)
+      || JSON.stringify(newLogs) !== JSON.stringify(S_data.logs);
+    if (!changed) return false;
+
+    S_data.cats = newCats;
+    S_data.logs = newLogs;
+    if (!S_data.cats[S_data.activeCatId]) S_data.activeCatId = cats[0]?.id || '';
+
+    await mirrorSet(K_MULTI.activeId, S_data.activeCatId);
+    await mirrorSet(K_MULTI.cats, S_data.cats);
+    await mirrorSet(K_MULTI.logs, S_data.logs);
+    lastSynced = { cats: structuredClone(S_data.cats), logs: structuredClone(S_data.logs) };
+    await mirrorSet(LAST_SYNCED_KEY, lastSynced);
+    return true;
+  } catch (err) {
+    console.error('[refreshFromCloudIfClean] pull failed:', err);
+    return false;
+  }
 }
 
 export async function save() {

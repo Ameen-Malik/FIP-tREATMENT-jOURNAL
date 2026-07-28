@@ -71,11 +71,17 @@ function renderAuthState() {
  */
 export async function initAuthUI() {
   await loadClerkUiBundle();
-  // afterSignOutUrl only takes effect as a global clerk.load() option, not as
-  // a per-component mountUserButton() prop (confirmed against Clerk's docs
-  // after the mountUserButton version silently did nothing in production —
-  // sign-out kept defaulting to "/", the landing page now instead of the app).
-  await clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor }, afterSignOutUrl: '/app.html' });
+  // Global redirect options — confirmed these only take effect set here, not
+  // as per-component mount props. Clerk's real default (when none of these
+  // are set) is a hard navigation to "/" after sign-in/up/out, not "stay on
+  // the current page" as originally assumed — "/" is the landing page now,
+  // not the app, so every one of these needs an explicit override.
+  await clerk.load({
+    ui: { ClerkUI: window.__internal_ClerkUICtor },
+    afterSignOutUrl: '/app.html',
+    signInFallbackRedirectUrl: '/app.html',
+    signUpFallbackRedirectUrl: '/app.html',
+  });
 
   authScreen = document.getElementById('auth-screen');
   signInEl = document.getElementById('clerk-sign-in');
