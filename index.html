@@ -51,7 +51,9 @@
     "Fully offline-first with automatic background sync",
     "CSV and Excel export",
     "Shareable milestone progress cards",
-    "Cross-device cloud sync"
+    "Cross-device cloud sync",
+    "Read-only vet-sharing link, no sign-in required to view",
+    "Blood report photo attachments at Day 1/30/60/84 checkpoints"
   ],
   "author": {
     "@type": "Person",
@@ -150,6 +152,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Yes — FIP Journal is built specifically around the Basmi FIP GS-441524 protocol, including its weight-tiered oral capsule dosing bands and injection dosing. See basmifip.com for product details. FIP Journal is an independent tracking tool and is not affiliated with, endorsed by, or an official product of Basmi FIP."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I share my cat's treatment log and blood reports with my vet?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Generate a permanent read-only link from the app and send it to your vet — it shows the full dose history, temperature/weight charts, and any blood report photos attached at the Day 1, 30, 60 and 84 checkpoints. No sign-in is required to view it, and you can revoke or regenerate the link anytime."
       }
     }
   ]
@@ -509,6 +519,11 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
         <h3>Shareable milestone cards</h3>
         <p>Auto-generated progress cards for Day 7, Day 30, halfway, and graduation.</p>
       </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-3.9M8.6 13.5l6.8 3.9"/></svg></div>
+        <h3>Share with your vet</h3>
+        <p>One read-only link with the full log, charts, and blood report photos — no sign-in for them.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -600,6 +615,10 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
       <details class="faq-item">
         <summary>Does FIP Journal work with Basmi FIP injections and capsules?</summary>
         <p>Yes — FIP Journal is built specifically around the Basmi FIP GS-441524 protocol, including its weight-tiered oral capsule dosing bands and injection dosing. See <a href="https://basmifip.com" target="_blank" rel="noopener noreferrer">Basmi FIP's official site</a> for product details, or their <a href="https://www.basmifipindia.com/fip-cats-treatment-guidelines" target="_blank" rel="noopener noreferrer">India treatment guidelines</a> for dosing documentation. FIP Journal is an independent tracking tool and is not affiliated with, endorsed by, or an official product of Basmi FIP.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I share my cat's treatment log and blood reports with my vet?</summary>
+        <p>Yes. Generate a permanent read-only link from the app and send it to your vet — it shows the full dose history, temperature/weight charts, and any blood report photos attached at the Day 1, 30, 60 and 84 checkpoints. No sign-in is required to view it, and you can revoke or regenerate the link anytime.</p>
       </details>
     </div>
   </div>
