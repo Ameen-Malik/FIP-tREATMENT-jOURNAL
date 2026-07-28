@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>FIP Journal — Free Tracker for the GS-441524 Cat FIP Treatment</title>
-<meta name="description" content="A free, offline-first tracker for the 84-day GS-441524 FIP treatment protocol. Log doses, temperature and weight, switch between injections and capsules, and never lose a day — even with zero signal at the vet."/>
+<title>FIP Journal — Basmi FIP 84-Day GS-441524 Dose Tracker</title>
+<meta name="description" content="Free tracker built for the Basmi FIP 84-day GS-441524 injection and capsule protocol. Log doses, temperature and weight, switch methods anytime, and never lose a day — even offline at the vet."/>
 <link rel="canonical" href="https://fipcure.space/"/>
 
 <!-- Open Graph -->
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="FIP Journal"/>
-<meta property="og:title" content="FIP Journal — Free Tracker for the GS-441524 Cat FIP Treatment"/>
-<meta property="og:description" content="Track every dose of your cat's 84-day FIP treatment. Injections or capsules, online or off. Built by a pet parent who used it for his own cat."/>
+<meta property="og:title" content="FIP Journal — Basmi FIP 84-Day GS-441524 Dose Tracker"/>
+<meta property="og:description" content="Track every dose of your cat's 84-day Basmi FIP GS-441524 treatment. Injections or capsules, online or off. Built by a pet parent who used it for his own cat."/>
 <meta property="og:url" content="https://fipcure.space/"/>
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="FIP Journal — Free Tracker for the GS-441524 Cat FIP Treatment"/>
-<meta name="twitter:description" content="Track every dose of your cat's 84-day FIP treatment. Injections or capsules, online or off. Free, offline-first, built by a pet parent."/>
+<meta name="twitter:title" content="FIP Journal — Basmi FIP 84-Day GS-441524 Dose Tracker"/>
+<meta name="twitter:description" content="Track every dose of your cat's 84-day Basmi FIP GS-441524 treatment. Injections or capsules, online or off. Free, offline-first, built by a pet parent."/>
 
 <meta name="apple-mobile-web-app-title" content="FIP Journal"/>
 <meta name="theme-color" content="#FBFAF8"/>
@@ -34,7 +34,7 @@
   "name": "FIP Journal",
   "alternateName": "FIP Cure Journal",
   "url": "https://fipcure.space/",
-  "description": "A free, offline-first progressive web app that tracks the 84-day GS-441524 FIP treatment protocol for cats — daily dose logging, temperature and weight tracking, injection and capsule dosing, multi-cat support, and CSV export.",
+  "description": "A free, offline-first progressive web app built for the Basmi FIP 84-day GS-441524 FIP treatment protocol for cats — daily dose logging, temperature and weight tracking, injection and capsule dosing, multi-cat support, and CSV export.",
   "applicationCategory": "HealthApplication",
   "operatingSystem": "Any (Progressive Web App — installable on iOS, Android, Windows, macOS)",
   "offers": {
@@ -57,6 +57,30 @@
     "@type": "Person",
     "name": "Ameen"
   }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to start tracking your cat's Basmi FIP GS-441524 treatment",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Sign up free",
+      "text": "Create a free account — no payment info required, just an email or a Google account."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Set your cat's protocol",
+      "text": "Enter your cat's name, FIP type, weight and treatment start date in one short form."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Start logging daily",
+      "text": "Press and hold to confirm today's dose, with temperature, weight and notes captured alongside it."
+    }
+  ]
 }
 </script>
 <script type="application/ld+json">
@@ -119,6 +143,14 @@
         "@type": "Answer",
         "text": "Your data lives on your device first and is only synced to the cloud to keep your own devices in sync with each other, using account sign-in to keep it tied to you. It is not used for anything beyond powering your own tracking."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "Does FIP Journal work with Basmi FIP injections and capsules?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — FIP Journal is built specifically around the Basmi FIP GS-441524 protocol, including its weight-tiered oral capsule dosing bands and injection dosing. See basmifip.com for product details. FIP Journal is an independent tracking tool and is not affiliated with, endorsed by, or an official product of Basmi FIP."
+      }
     }
   ]
 }
@@ -147,26 +179,9 @@ html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   --shadow:0 4px 24px rgba(20,15,5,.05);
   --shadow-lg:0 16px 48px rgba(20,15,5,.08);
 }
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#0B0C0F;
-    --bg2:#121317;
-    --surface:#18191F;
-    --text:#F5F5F7;
-    --text2:rgba(245,245,247,.64);
-    --text3:rgba(245,245,247,.4);
-    --border:rgba(245,245,247,.1);
-    --blue:#0A84FF;
-    --blue-d:rgba(10,132,255,.16);
-    --green:#30D158;
-    --green-d:rgba(48,209,88,.16);
-    --coral:#FF7A6B;
-    --coral-d:rgba(255,122,107,.14);
-    --pink:#FF375F;
-    --shadow:0 4px 24px rgba(0,0,0,.3);
-    --shadow-lg:0 20px 60px rgba(0,0,0,.45);
-  }
-}
+/* Landing page is deliberately locked to light theme regardless of system
+   preference — a bright, clean surface reads more clinically trustworthy
+   for a health-adjacent tool than an auto dark mode would. */
 
 body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img,svg{display:block;max-width:100%}
@@ -177,6 +192,16 @@ section{padding:88px 0}
 
 .skip-link{position:absolute;left:-999px;top:0;background:var(--blue);color:#fff;padding:10px 16px;border-radius:8px;z-index:200}
 .skip-link:focus{left:16px;top:16px}
+
+/* Scroll-reveal — the hidden state only applies once html.js-ready is set
+   (by the script at the end of body), so content stays visible by default
+   if JS fails to load or run for any reason, rather than silently vanishing. */
+.reveal{transition:opacity .6s ease-out,transform .6s ease-out}
+html.js-ready .reveal{opacity:0;transform:translateY(24px)}
+html.js-ready .reveal.in{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion: reduce){
+  html.js-ready .reveal{opacity:1;transform:none;transition:none}
+}
 
 h1,h2,h3{font-weight:800;letter-spacing:-.02em;line-height:1.12}
 h2{font-size:clamp(26px,4vw,38px);margin-bottom:14px}
@@ -202,8 +227,23 @@ nav.links a:hover{color:var(--text)}
 .btn-ghost:hover{border-color:var(--text3)}
 
 /* ── HERO ── */
-.hero{padding:72px 0 40px}
-.hero-inner{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero{padding:72px 0 40px;position:relative;overflow:hidden}
+.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+
+/* Decorative paw-print trail — purely visual, hidden from assistive tech,
+   never intercepts clicks. Static (no animation) unless the visitor hasn't
+   asked for reduced motion. */
+.paw-trail{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.paw-trail svg{position:absolute;color:var(--blue);opacity:.07;transform:rotate(var(--r,0deg))}
+@media (prefers-reduced-motion: no-preference){
+  .paw-trail svg{opacity:0;animation:pawIn .9s ease-out forwards}
+  .paw-trail svg:nth-child(1){animation-delay:.1s}
+  .paw-trail svg:nth-child(2){animation-delay:.4s}
+  .paw-trail svg:nth-child(3){animation-delay:.7s}
+  .paw-trail svg:nth-child(4){animation-delay:1s}
+  .paw-trail svg:nth-child(5){animation-delay:1.3s}
+}
+@keyframes pawIn{from{opacity:0;transform:translateY(12px) scale(.8) rotate(var(--r,0deg))}to{opacity:.07;transform:translateY(0) scale(1) rotate(var(--r,0deg))}}
 @media(max-width:900px){.hero-inner{grid-template-columns:1fr;gap:40px}}
 .hero h1{font-size:clamp(34px,5.4vw,54px);margin-bottom:18px}
 .hero .lede{font-size:18.5px;margin-bottom:30px}
@@ -224,13 +264,12 @@ nav.links a:hover{color:var(--text)}
 .mock-stat b{display:block;font-size:15px;font-weight:800}
 .mock-stat span{font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
 .mock-hold{height:52px;border-radius:26px;background:linear-gradient(90deg,var(--green) 62%,var(--surface) 62%);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13.5px;color:#fff;position:relative;overflow:hidden}
-.mock-hold::after{content:"Hold to log today's dose";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text);mix-blend-mode:difference}
+.mock-hold::after{content:"Hold to log today's dose";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;-webkit-text-stroke:.4px rgba(20,21,26,.35);text-shadow:0 1px 2px rgba(20,21,26,.15)}
 .mock-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px}
 .mock-cal i{aspect-ratio:1;border-radius:6px;background:var(--border)}
 .mock-cal i.done{background:var(--green)}
 .mock-cal i.today{background:var(--blue)}
 .mock-cal i.miss{background:var(--coral)}
-.mock-caption{text-align:center;font-size:12px;color:var(--text3);font-weight:600;margin-top:14px}
 
 /* ── STORY ── */
 .story{background:var(--bg2)}
@@ -309,6 +348,16 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="pawIcon" viewBox="0 0 40 40" fill="currentColor">
+    <ellipse cx="20" cy="27" rx="10" ry="8"/>
+    <ellipse cx="7" cy="14" rx="4" ry="5" transform="rotate(-15 7 14)"/>
+    <ellipse cx="16" cy="7.5" rx="4" ry="5.5" transform="rotate(-5 16 7.5)"/>
+    <ellipse cx="26" cy="7.5" rx="4" ry="5.5" transform="rotate(5 26 7.5)"/>
+    <ellipse cx="34" cy="14" rx="4" ry="5" transform="rotate(15 34 14)"/>
+  </symbol>
+</svg>
+
 <header class="site">
   <div class="nav-inner">
     <a class="brand" href="#top">
@@ -329,11 +378,18 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
 
 <!-- ── HERO ── -->
 <section class="hero" id="top">
+  <div class="paw-trail" aria-hidden="true">
+    <svg style="width:30px;height:30px;left:4%;top:14%;--r:-18deg"><use href="#pawIcon"/></svg>
+    <svg style="width:22px;height:22px;left:9%;top:32%;--r:-8deg"><use href="#pawIcon"/></svg>
+    <svg style="width:34px;height:34px;left:85%;top:8%;--r:14deg"><use href="#pawIcon"/></svg>
+    <svg style="width:24px;height:24px;left:90%;top:26%;--r:22deg"><use href="#pawIcon"/></svg>
+    <svg style="width:26px;height:26px;left:6%;top:78%;--r:6deg"><use href="#pawIcon"/></svg>
+  </div>
   <div class="wrap hero-inner">
     <div>
       <span class="eyebrow">84-day Basmi FIP GS-441524 protocol tracker</span>
       <h1>Every dose, every day — tracked, so you don't have to hold it all in your head.</h1>
-      <p class="lede">FIP Journal is a free, offline-first companion for treating FIP with GS-441524. Log today's dose in seconds, watch the 84-day calendar fill in, and never lose track of a temperature, a weight, or a missed day.</p>
+      <p class="lede">Built for the Basmi FIP 84-day GS-441524 protocol. Log today's dose in seconds and never lose track of a temperature, a weight, or a missed day.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary lg" href="/app.html">Start tracking free</a>
         <a class="btn btn-ghost" href="#features">See what it does</a>
@@ -365,7 +421,6 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
             <i class="done"></i><i class="done"></i><i class="miss"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i>
             <i class="done"></i><i class="done"></i><i class="done"></i><i class="today"></i><i></i><i></i><i></i>
           </div>
-          <div class="mock-caption">Illustrative mockup — not an actual screenshot</div>
         </div>
       </div>
     </div>
@@ -373,7 +428,7 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
 </section>
 
 <!-- ── HOW IT WORKS ── -->
-<section id="how">
+<section id="how" class="reveal">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Getting started</span>
@@ -400,7 +455,7 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
 </section>
 
 <!-- ── STORY ── -->
-<section class="story" id="story">
+<section class="story reveal" id="story">
   <div class="wrap story-inner">
     <div class="story-card">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
@@ -410,72 +465,72 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
     <div>
       <span class="eyebrow">Why this exists</span>
       <h2>Built for one cat first, now for every FIP family</h2>
-      <p class="lede">FIP treatment is intense: a daily dose that can't slip, temperatures and weight to watch for warning signs, and a calendar that stretches nearly three months. FIP Journal started as a personal tool — a way to track a real cat's real recovery, day by day, without relying on memory, a notebook, or a spreadsheet that didn't fit the moment. It's now open for any pet parent walking the same road, whether that's a first-time cat parent, a foster, or a rescue managing several cases at once.</p>
+      <p class="lede">FIP treatment means a daily dose that can't slip, for nearly three months straight. FIP Journal started as a way to track one real cat's recovery without relying on memory or a spreadsheet — now it's open for any pet parent walking the same road.</p>
     </div>
   </div>
 </section>
 
 <!-- ── FEATURES ── -->
-<section id="features">
+<section id="features" class="reveal">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Everything the protocol needs</span>
       <h2>One place for the whole 84 days</h2>
-      <p class="lede">No spreadsheets, no sticky notes on the fridge. Just the day-to-day tracking a GS-441524 course actually requires.</p>
+      <p class="lede">No spreadsheets, no sticky notes on the fridge — just the day-to-day tracking a GS-441524 course needs.</p>
     </div>
     <div class="feat-grid">
       <div class="feat">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
         <h3>Press-and-hold daily logging</h3>
-        <p>A deliberate hold-to-confirm action for logging today's dose, with temperature, weight and a free-text note captured alongside it — so a high-stakes action never gets fat-fingered.</p>
+        <p>Hold to confirm today's dose, with temperature, weight and notes captured alongside it.</p>
       </div>
       <div class="feat">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
         <h3>Full 84-day calendar</h3>
-        <p>See the entire treatment window at a glance, swipe between months, and color-code done, missed and upcoming days as you go.</p>
+        <p>Swipe between months and see done, missed and upcoming days at a glance.</p>
       </div>
       <div class="feat">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
         <h3>Retroactive batch logging</h3>
-        <p>Starting mid-treatment or catching up after a rough week? Select a range of past days and backfill them in one pass.</p>
+        <p>Starting mid-treatment or catching up? Backfill a range of past days in one pass.</p>
       </div>
       <div class="feat">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20h5v-1a4 4 0 0 0-4-4h-1M9 20H4v-1a4 4 0 0 1 4-4h1m0-3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg></div>
         <h3>Multiple cats, one app</h3>
-        <p>Treating more than one cat, or fostering several FIP cases at once? Each cat gets its own protocol, schedule and log history.</p>
+        <p>Each cat gets its own protocol, schedule and log history — built for fosters too.</p>
       </div>
       <div class="feat">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg></div>
         <h3>CSV / Excel export</h3>
-        <p>Your entire journal — every dose, temperature, weight and note — exports to a spreadsheet in one tap, ready for your vet or your own records.</p>
+        <p>Your entire journal exports to a spreadsheet in one tap, ready for your vet.</p>
       </div>
       <div class="feat">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5-9 9"/></svg></div>
         <h3>Shareable milestone cards</h3>
-        <p>Day 7, Day 30, halfway, graduation — auto-generated progress cards to share with family, friends, or your FIP support community.</p>
+        <p>Auto-generated progress cards for Day 7, Day 30, halfway, and graduation.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ── DOSING ── -->
-<section id="dosing" class="dosing">
+<section id="dosing" class="dosing reveal">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Your choice, either way</span>
       <h2>Injections or capsules — track both, switch anytime</h2>
-      <p class="lede">FIP Journal is built around the Basmi FIP GS-441524 injection and oral capsule protocol. Plenty of cats start on injections and move to oral capsules once they stabilize — and some switch back — so it's built to follow that reality instead of forcing you into one method.</p>
+      <p class="lede">Built around the Basmi FIP GS-441524 protocol. Cats often start on injections and move to capsules once stable — track either, switch anytime.</p>
     </div>
     <div class="dosing-inner">
       <div class="dose-card inj">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M7 13l4 4M3 21l4.5-1.5L21 6 18 3 4.5 16.5 3 21ZM14.5 6.5l3 3M11.5 9.5l3 3"/></svg></div>
         <h3>Injection dosing</h3>
-        <p>Enter your cat's weight and vial concentration and the actual dose (ml) is calculated automatically from the protocol's mg/kg target — no manual math mid-injection.</p>
+        <p>Enter weight and vial concentration — the exact dose (ml) auto-calculates from the mg/kg target.</p>
       </div>
       <div class="dose-card cap">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8.5" width="19" height="7" rx="3.5" transform="rotate(-45 12 12)"/><path d="m8.5 15.5 7-7"/></svg></div>
         <h3>Oral capsule dosing</h3>
-        <p>Capsules are tiered by weight band — pink, green and blue for small, medium and large cats — so the right size is always clear at a glance.</p>
+        <p>Capsules are tiered by weight band — pink, green, blue — so the right size is always obvious.</p>
         <div class="pill-swatches"><i class="pk"></i><i class="gr"></i><i class="bl"></i></div>
       </div>
       <div class="dosing-switch">
@@ -487,7 +542,7 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
 </section>
 
 <!-- ── OFFLINE ── -->
-<section class="offline" id="offline">
+<section class="offline reveal" id="offline">
   <div class="wrap offline-inner">
     <div class="offline-visual">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
@@ -496,7 +551,7 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
     <div>
       <span class="eyebrow">Offline-first, by design</span>
       <h2>No signal at the clinic? Log the dose anyway.</h2>
-      <p class="lede">FIP Journal is an installable app that works with zero connectivity — because doses often get given in exam rooms, basements, and other dead zones.</p>
+      <p class="lede">Works with zero connectivity — doses often get given in exam rooms and other dead zones.</p>
       <ul>
         <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Install to your home screen like a native app</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Every log is saved locally the instant you confirm it</li>
@@ -507,7 +562,7 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
 </section>
 
 <!-- ── FAQ ── -->
-<section id="faq">
+<section id="faq" class="reveal">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Questions</span>
@@ -542,12 +597,16 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
         <summary>Is my cat's treatment data private?</summary>
         <p>Your data lives on your device first and is only synced to the cloud to keep your own devices in sync with each other, using account sign-in to keep it tied to you. It is not used for anything beyond powering your own tracking.</p>
       </details>
+      <details class="faq-item">
+        <summary>Does FIP Journal work with Basmi FIP injections and capsules?</summary>
+        <p>Yes — FIP Journal is built specifically around the Basmi FIP GS-441524 protocol, including its weight-tiered oral capsule dosing bands and injection dosing. See <a href="https://basmifip.com" target="_blank" rel="noopener noreferrer">Basmi FIP's official site</a> for product details, or their <a href="https://www.basmifipindia.com/fip-cats-treatment-guidelines" target="_blank" rel="noopener noreferrer">India treatment guidelines</a> for dosing documentation. FIP Journal is an independent tracking tool and is not affiliated with, endorsed by, or an official product of Basmi FIP.</p>
+      </details>
     </div>
   </div>
 </section>
 
 <!-- ── FINAL CTA ── -->
-<section>
+<section class="reveal">
   <div class="cta-band">
     <h2>You've got enough to manage right now</h2>
     <p>Let FIP Journal hold the schedule, the doses and the numbers — so you can focus on your cat.</p>
@@ -566,11 +625,29 @@ footer.site{padding:48px 0 40px;color:var(--text3);font-size:13.5px}
     <div class="footer-links">
       <a href="#features">Features</a>
       <a href="#faq">FAQ</a>
+      <a href="https://basmifip.com" target="_blank" rel="noopener noreferrer">Basmi FIP ↗</a>
       <a href="/app.html">Sign in</a>
     </div>
   </div>
 </footer>
 <p class="disclaimer">FIP Journal is an independent tracking tool built by a pet parent and is not a medical device or a substitute for veterinary care. Always follow your veterinarian's guidance for diagnosing and treating FIP. GS-441524 dosing decisions should be made with a qualified vet. FIP Journal is not affiliated with, endorsed by, or an official product of Basmi FIP or any manufacturer.</p>
 
+<script>
+// Progressive enhancement only — the .reveal hidden state is scoped under
+// html.js-ready (added below), so if this never runs, sections just stay
+// visible at their normal opacity instead of silently disappearing.
+document.documentElement.classList.add('js-ready');
+var sections = document.querySelectorAll('.reveal');
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  sections.forEach(function(el){ el.classList.add('in'); });
+} else {
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  sections.forEach(function(el){ io.observe(el); });
+}
+</script>
 </body>
 </html>
