@@ -16,6 +16,7 @@ import './protocol-sheet.js';
 import './milestone-card.js';
 import './batch-log.js';
 import './pet-sharing.js';
+import './blood-reports.js';
 import './export.js';
 import './tabs.js';
 import './pwa.js';

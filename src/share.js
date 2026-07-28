@@ -28,6 +28,15 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
+/** Fetches an image through RLS (blood_reports_shared_read policy checks
+ *  the share link is still valid, re-evaluated on every request) and hands
+ *  back a local object URL. */
+async function reportObjectUrl(storagePath) {
+  const { data, error } = await supabase.storage.from('blood-reports').download(storagePath);
+  if (error) throw error;
+  return URL.createObjectURL(data);
+}
+
 function renderError(msg) {
   document.getElementById('shareRoot').innerHTML =
     `<div class="share-error"><div class="share-error-icon">🔒</div><div class="share-error-t">${esc(msg)}</div></div>`;
@@ -115,6 +124,31 @@ function wireChartHover(container, series) {
   });
 }
 
+async function bloodReportsHtml(startDate, reports) {
+  if (!reports.length) return '';
+  const byDate = {};
+  for (const r of reports) (byDate[r.date_key] ||= []).push(r);
+
+  const slots = await Promise.all(Object.keys(byDate).sort().map(async dateKey => {
+    const dayNum = treatDayOf(startDate, dateKey);
+    const thumbs = await Promise.all(byDate[dateKey].map(async r => {
+      let url = '#';
+      try { url = await reportObjectUrl(r.storage_path); } catch {}
+      return `<img class="br-thumb share-br-thumb" src="${url}"/>`;
+    }));
+    return `<div class="br-slot">
+      <div class="br-slot-label">Day ${dayNum}</div>
+      <div class="br-slot-sub">${esc(fmtShort(parseDateKey(dateKey)))}</div>
+      <div class="br-thumbs">${thumbs.join('')}</div>
+    </div>`;
+  }));
+
+  return `<div class="share-table-wrap" style="margin-bottom:22px">
+    <div class="share-chart-title" style="padding:14px 14px 0">Blood Reports</div>
+    ${slots.join('')}
+  </div>`;
+}
+
 async function main() {
   const token = new URLSearchParams(location.search).get('t');
   if (!token) return renderError('No report link provided.');
@@ -178,6 +212,8 @@ async function main() {
     </tr>`);
   }
 
+  const bloodReportsSection = await bloodReportsHtml(cat.start_date, data.bloodReports || []);
+
   document.getElementById('shareRoot').innerHTML = `
     <div class="share-header">
       <div class="share-header-title">${esc(cat.name)}</div>
@@ -196,6 +232,8 @@ async function main() {
       ${lineChart({ title: 'Weight', unit: 'kg', points: weightPoints, colorVar: '--green' })}
     </div>
 
+    ${bloodReportsSection}
+
     <div class="share-table-wrap">
       <table class="share-table">
         <thead><tr><th>Day</th><th>Date</th><th>Status</th><th>Dose</th><th>Temp</th><th>Weight</th><th>Notes</th></tr></thead>
@@ -204,12 +242,21 @@ async function main() {
     </div>
 
     <div class="share-footer">Shared from FIP Journal · Read-only, no login required</div>
+
+    <div class="share-lightbox" id="shareLightbox"><img id="shareLightboxImg"/></div>
   `;
 
   wireChartHover(document, [
     { points: tempPoints, unit: '°C' },
     { points: weightPoints, unit: 'kg' },
   ]);
+
+  const lightbox = document.getElementById('shareLightbox');
+  document.querySelectorAll('.share-br-thumb').forEach(img => img.addEventListener('click', () => {
+    document.getElementById('shareLightboxImg').src = img.src;
+    lightbox.classList.add('open');
+  }));
+  lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
 }
 
 main();

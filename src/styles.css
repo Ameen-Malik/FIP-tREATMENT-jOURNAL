@@ -962,3 +962,18 @@ body{background:var(--bg);color:var(--l1);font-family:var(--font);min-height:100
 .share-status-future { color: var(--l3); }
 
 .share-footer { text-align: center; color: var(--l3); font-size: 12px; margin-top: 24px; }
+
+/* ── BLOOD REPORT SLOTS (in-app sheet + shared report) ── */
+.br-slot{padding:14px 16px;border-bottom:.5px solid var(--l4)}
+.br-slot-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.br-slot-label{font-size:15px;font-weight:700;color:var(--l1)}
+.br-slot-sub{font-size:12px;color:var(--l3);margin-top:2px}
+.br-add-btn{padding:8px 14px;border-radius:14px;border:1px solid var(--l4);background:var(--s2);color:var(--blue);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.br-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.br-thumb-wrap{position:relative;width:64px;height:64px}
+.br-thumb{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--l4)}
+.br-thumb-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.share-br-thumb{width:100px;height:100px;cursor:pointer}
+.share-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.share-lightbox.open{display:flex}
+.share-lightbox img{max-width:100%;max-height:100%;border-radius:8px}

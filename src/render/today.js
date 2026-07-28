@@ -4,6 +4,7 @@ import { setPills } from '../ui/pills.js';
 import { updateHoldButtonState, getNextInjectionTarget } from '../ui/hold-to-confirm.js';
 import { applyMethodToTodayForm } from '../actions.js';
 import { capsuleBandInfo } from '../utils.js';
+import { checkBloodReportMilestone } from '../blood-reports.js';
 
 export function renderToday() {
   const day = curDay(), st = stats(), tk = todayKey(), log = S.logs[tk]||{};
@@ -139,4 +140,5 @@ export function renderToday() {
     document.querySelectorAll('#capsulePillsToday .pill').forEach(p =>
       p.classList.toggle('sel', p.dataset.v === log.capsuleBand));
   }
+  checkBloodReportMilestone();
 }

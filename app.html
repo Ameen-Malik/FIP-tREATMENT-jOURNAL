@@ -102,6 +102,11 @@
     <span id="injectionTimingText">Next injection due at 20:00 (2h remaining)</span>
   </div>
 
+  <div id="bloodReportBanner" style="margin: 0 16px 14px; padding:10px 14px; background:var(--rd); border:1px solid var(--l4); border-radius:var(--rs); font-size:12px; font-weight:600; color:var(--red); display:none; align-items:center; gap:8px; line-height: 1.4; cursor:pointer;">
+    <span style="font-size: 14px;">🩸</span>
+    <span id="bloodReportBannerText">Day 30 milestone — add today's blood report?</span>
+  </div>
+
   <!-- Logged State Card (shown when complete) -->
   <div class="logged-state-card" id="loggedStateCard" style="display: none;">
     <div class="success-checkmark">
@@ -212,6 +217,14 @@
       <div class="ir-body">
         <div class="ir-title">Share with Vet</div>
         <div class="ir-sub">Read-only report link, no sign-in needed</div>
+      </div>
+      <div class="ir-arr">›</div>
+    </div>
+    <div class="ir" id="bloodReportsRow">
+      <div class="ir-icon">🩸</div>
+      <div class="ir-body">
+        <div class="ir-title">Blood Reports</div>
+        <div class="ir-sub">Day 1, 30, 60 & 84 — included in the shared report</div>
       </div>
       <div class="ir-arr">›</div>
     </div>
@@ -369,6 +382,17 @@
     </div>
   </div>
 </div>
+
+<!-- SHEET: Blood Reports -->
+<div class="sheet-ov" id="bloodReportsSheet">
+  <div class="sheet" style="max-height: 85vh; overflow-y: auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Blood Reports</div>
+    <div class="sheet-sub">Attach report photos at key checkpoints — these are included automatically in your shared vet report.</div>
+    <div id="bloodReportSlots"></div>
+  </div>
+</div>
+<input type="file" id="bloodReportFileInput" accept="image/*" multiple style="display:none" />
 
 <!-- SHEET: Edit Day -->
 <div class="sheet-ov" id="editSheet">

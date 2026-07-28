@@ -136,3 +136,41 @@ export async function revokeShareLink(catId) {
     .from('share_links').update({ revoked: true }).eq('cat_id', catId).eq('revoked', false);
   if (error) throw error;
 }
+
+/** All blood report rows for a cat, newest first. */
+export async function getBloodReports(catId) {
+  const { data, error } = await supabase
+    .from('blood_reports').select('*').eq('cat_id', catId).order('date_key', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+/** Uploads a blood report image and records it against a specific day. */
+export async function uploadBloodReport(catId, dateKey, file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${catId}/${dateKey}/${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await supabase.storage.from('blood-reports').upload(path, file);
+  if (upErr) throw upErr;
+  const { data, error: insErr } = await supabase
+    .from('blood_reports').insert({ cat_id: catId, date_key: dateKey, storage_path: path }).select().single();
+  if (insErr) throw insErr;
+  return data;
+}
+
+export async function deleteBloodReport(report) {
+  await supabase.storage.from('blood-reports').remove([report.storage_path]);
+  const { error } = await supabase.from('blood_reports').delete().eq('id', report.id);
+  if (error) throw error;
+}
+
+/**
+ * Fetches an image's bytes through RLS (not a bare public URL — the bucket
+ * is private) and hands back a local object URL for <img src>. Works
+ * identically for the signed-in owner and an anonymous share-link viewer;
+ * which one succeeds is entirely down to which Storage policy matches.
+ */
+export async function bloodReportObjectUrl(storagePath) {
+  const { data, error } = await supabase.storage.from('blood-reports').download(storagePath);
+  if (error) throw error;
+  return URL.createObjectURL(data);
+}
