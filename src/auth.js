@@ -36,7 +36,12 @@ function renderAuthState() {
     // stuck loop when re-entering an email on the "same" old component.
     if (mountedSignIn) { clerk.unmountSignIn(signInEl); mountedSignIn = false; }
     if (!mountedUserButton) {
-      clerk.mountUserButton(userButtonEl);
+      // afterSignOutUrl: without it, sign-out defaults to "/" — the landing
+      // page now, not the app — an extra, unnecessary hop through a page with
+      // no Clerk awareness at all. Staying on /app.html means renderAuthState
+      // just flips back to the sign-in screen in place, same as every other
+      // signed-out state transition.
+      clerk.mountUserButton(userButtonEl, { afterSignOutUrl: '/app.html' });
       mountedUserButton = true;
     }
   } else {
@@ -48,17 +53,15 @@ function renderAuthState() {
       // withSignUp: keeps sign-up embedded in this same mounted component
       // instead of the default behavior of linking out to Clerk's hosted
       // Account Portal.
-      // fallbackRedirectUrl/signUpFallbackRedirectUrl: Clerk defaults both to
-      // "/" when omitted — correct back when "/" was the app, wrong now that
-      // "/" is the marketing landing page. Without this, completing sign-in
-      // (and especially the Google OAuth flow, which does a real cross-site
-      // redirect rather than resolving in place) drops the user back on the
-      // landing page instead of into the app.
-      clerk.mountSignIn(signInEl, {
-        withSignUp: true,
-        fallbackRedirectUrl: '/app.html',
-        signUpFallbackRedirectUrl: '/app.html',
-      });
+      // Deliberately NOT passing fallbackRedirectUrl/signUpFallbackRedirectUrl
+      // here — tried that to fix the post-OAuth landing page, but it broke
+      // the plain password flow instead (looped back to the identifier step
+      // after a correct password — confirmed the sign-in itself succeeded
+      // server-side each time; a hard refresh always showed the real signed-in
+      // state). Sign-in is only ever mounted here, on /app.html, so Clerk's
+      // own default of returning to the originating page already does the
+      // right thing for both password and OAuth, with no explicit override.
+      clerk.mountSignIn(signInEl, { withSignUp: true });
       mountedSignIn = true;
     }
   }
