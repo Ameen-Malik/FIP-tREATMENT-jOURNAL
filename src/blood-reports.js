@@ -21,7 +21,8 @@ async function renderSlots() {
   let reports;
   try {
     reports = await getBloodReports(S_data.activeCatId);
-  } catch {
+  } catch (err) {
+    console.error('[blood-reports] load failed:', err);
     container.innerHTML = '<div class="sh-note">Could not load reports — try again.</div>';
     return;
   }
@@ -63,7 +64,8 @@ async function renderSlots() {
       await deleteBloodReport({ id: btn.dataset.id, storage_path: btn.dataset.path });
       toast('Report removed');
       renderSlots();
-    } catch {
+    } catch (err) {
+      console.error('[blood-reports] delete failed:', err);
       toast('Could not remove — try again');
     }
   }));
@@ -86,7 +88,8 @@ document.getElementById('bloodReportFileInput').addEventListener('change', async
     }
     toast('Blood report added ✓');
     renderSlots();
-  } catch {
+  } catch (err) {
+    console.error('[blood-reports] upload failed:', err);
     toast('Upload failed — try again');
   }
 });

@@ -2,6 +2,7 @@
 design.md
 changelog.md
 agents.md
+claude-skills-reference.md
 .agents/
 .claude/
 skills-lock.json
